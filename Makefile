@@ -1,8 +1,3 @@
-# TODO
-# - sources directory
-# - listen von source files und o files
-# - die listen kompilieren
-# - dann die .out datei aus den o files bauen
 
 # directories
 OBJDIR = ./build
@@ -13,6 +8,9 @@ CPP = g++
 
 # list of all cpp files
 CPP_SOURCES = $(wildcard $(SRCDIR)/*.cpp)
+
+# names of subdirectories with source files
+VPATH = $(sort $(dir $(CPP_SOURCES)))
 
 # list of all cpp objects
 CPP_OBJECTS = $(notdir $(CPP_SOURCES:.cpp=.o))
@@ -27,15 +25,16 @@ all: $(OBJDIR)/$(OUTPUT)
 
 # rules to generate object files
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+$(OBJDIR)/%.o: %.cpp
 	@echo "CPP $@"
-	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
 	$(CPP) -c $< -o $@
 
 # rule to build output file
 $(OBJDIR)/$(OUTPUT): $(OBJPRE)
-	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
 	$(CPP) $(OBJPRE) -o $@
 
 clean:
 	rm -f $(OBJDIR)/*
+
+# create build directory if it doesn't exits
+$(shell mkdir -p $(OBJDIR))
