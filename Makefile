@@ -6,7 +6,7 @@ SRCDIR = ./src
 # commands
 CPP = g++
 
-# list of all cpp files
+# list of all cpp files in src directory
 CPP_SOURCES = $(wildcard $(SRCDIR)/*.cpp)
 
 # names of subdirectories with source files
@@ -17,14 +17,13 @@ CPP_OBJECTS = $(notdir $(CPP_SOURCES:.cpp=.o))
 
 OBJPRE = $(addprefix $(OBJDIR)/, $(CPP_OBJECTS))
 
-# output file name
+# output file name, outputs .exe on windows and .out on linux
 OUTPUT = output
 
-# default target
-all: $(OBJDIR)/$(OUTPUT)
+# default target builds the output file and executes it
+all: $(OBJDIR)/$(OUTPUT) run
 
 # rules to generate object files
-
 $(OBJDIR)/%.o: %.cpp
 	@echo "CPP $@"
 	$(CPP) -c $< -o $@
@@ -33,8 +32,12 @@ $(OBJDIR)/%.o: %.cpp
 $(OBJDIR)/$(OUTPUT): $(OBJPRE)
 	$(CPP) $(OBJPRE) -o $@
 
+# clean build directory by deleting all files
 clean:
 	rm -f $(OBJDIR)/*
 
-# create build directory if it doesn't exits
+# create build directory if it doesn't exist
 $(shell mkdir -p $(OBJDIR))
+
+run:
+	$(OBJDIR)/$(OUTPUT)
