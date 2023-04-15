@@ -38,4 +38,4 @@ $(OBJDIR)/$(OUTPUT): $(OBJPRE)
 	$(CPP) $(OBJPRE) -o $@
 
 clean:
-	rm -f $(OBJPRE)
+	rm -f $(OBJDIR)/*
