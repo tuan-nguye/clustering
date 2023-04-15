@@ -14,11 +14,8 @@ CPP_SOURCES = $(shell find . -name "*.cpp")
 # list of all cpp objects
 CPP_OBJECTS = $(notdir $(CPP_SOURCES:.cpp=.o))
 
-output: %.o
-	g++ %.o -o output
+# rules to generate object files
 
-
-
-target: dependencies:
-	action
-	
+$(OBJDIR)/%.o: %.cpp
+	@echo "CPP		$@"
+	g++ -o $@ $<
