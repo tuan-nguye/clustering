@@ -1,13 +1,16 @@
+rwildcard = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
 # directories
 OBJDIR = ./build
 SRCDIR = ./src
 
+CPPFLAGS = -I $(SRCDIR)
+
 # commands
 CPP = g++
 
 # list of all cpp files in src directory
-CPP_SOURCES = $(wildcard $(SRCDIR)/*.cpp)
+CPP_SOURCES = $(call rwildcard, $(SRCDIR), *.cpp)
 
 # names of subdirectories with source files
 VPATH = $(sort $(dir $(CPP_SOURCES)))
@@ -26,11 +29,11 @@ all: $(OBJDIR)/$(OUTPUT) run
 # rules to generate object files
 $(OBJDIR)/%.o: %.cpp
 	@echo "CPP $@"
-	$(CPP) -c $< -o $@
+	$(CPP) $(CPPFLAGS) -c $< -o $@
 
 # rule to build output file
 $(OBJDIR)/$(OUTPUT): $(OBJPRE)
-	$(CPP) $(OBJPRE) -o $@
+	$(CPP) $(CPPFLAGS) $(OBJPRE) -o $@
 
 # clean build directory by deleting all files
 clean:
