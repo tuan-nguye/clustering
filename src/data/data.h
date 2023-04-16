@@ -1,6 +1,7 @@
 #include <vector>
 
-class Data {
+class Data
+{
     public:
         std::vector<float> data;
 };
