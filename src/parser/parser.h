@@ -10,7 +10,7 @@ class Data;
 class Parser
 {
     public:
-        virtual void parse(std::vector<Data*> &data, std::string file_path) = 0;
+        virtual void parse(std::vector<Data*> &data, std::string file_path) {};
 };
 
 #endif

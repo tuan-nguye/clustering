@@ -41,4 +41,6 @@ void CSV_Parser::parse(std::vector<Data*> &data, std::string file_path)
 
         data.push_back(ld);
     }
+
+    file.close();
 };

@@ -6,7 +6,6 @@
 class CSV_Parser: public Parser
 {
     public:
-        CSV_Parser() {};
         void parse(std::vector<Data*> &data, std::string file_path);
 };
 
