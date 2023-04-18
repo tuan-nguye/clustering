@@ -43,4 +43,9 @@ void CSV_Parser::parse(std::vector<Data*> &data, std::string file_path)
     }
 
     file.close();
-};
+}
+
+void CSV_Parser::parse(std::vector<Data*> &data, std::string datafile_path, std::string labelfile_path)
+{
+    // no implementation here
+}
