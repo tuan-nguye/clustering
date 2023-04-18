@@ -1,15 +1,16 @@
 #include <vector>
 #include <iostream>
-#include "data/data.h"
+#include <string>
 
 #ifndef __parser_include__
 #define __parser_include__
 
+class Data;
+
 class Parser
 {
     public:
-        Parser() {};
-        virtual std::vector<Data> parse() = 0;
+        virtual void parse(std::vector<Data*> &data, std::string file_path) = 0;
 };
 
 #endif

@@ -21,7 +21,7 @@ CPP_OBJECTS = $(notdir $(CPP_SOURCES:.cpp=.o))
 OBJPRE = $(addprefix $(OBJDIR)/, $(CPP_OBJECTS))
 
 # output file name, outputs .exe on windows and .out on linux
-OUTPUT = output
+OUTPUT = cluster
 
 # default target builds the output file and executes it
 all: $(OBJDIR)/$(OUTPUT) run
