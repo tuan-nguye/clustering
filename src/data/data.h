@@ -1,4 +1,5 @@
 #include <vector>
+#include <string>
 
 #ifndef __data_include__
 #define __data_include__

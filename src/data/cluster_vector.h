@@ -1,7 +1,7 @@
 #include <vector>
 
-class Cluster;
-class Data;
+#include "data/cluster.h"
+#include "data/data.h"
 
 #ifndef __cluster_vector_include__
 #define __cluster_vector_include__
@@ -9,9 +9,11 @@ class Data;
 class Cluster_Vector
 {
     public:
-        std::vector<Cluster*> cluster;
+        std::vector<Cluster> clusters;
         void add_data(Data *data);
-        void join(int i, int j);
+        // join the clusters on index i and j
+        // return the index of the new cluster
+        int join(int i, int j);
 };
 
 #endif

@@ -2,7 +2,7 @@
 #include "data/data.h"
 #include <fstream>
 
-void CSV_Parser::parse(std::vector<Data> &data, std::string file_path)
+void CSV_Parser::parse(std::vector<Data*> &data, std::string file_path)
 {
     std::cout << "CSV_Parser" << std::endl;
     std::ifstream file(file_path);
@@ -31,12 +31,12 @@ void CSV_Parser::parse(std::vector<Data> &data, std::string file_path)
         }
         vals.push_back(line);
 
-        Data d = Data(vals.back());
+        Data *d = new Data(vals.back());
         vals.pop_back();
 
         for(std::string v : vals)
         {
-            d.attributes.push_back(std::stof(v));
+            d->attributes.push_back(std::stof(v));
         }
 
         data.push_back(d);
@@ -45,7 +45,7 @@ void CSV_Parser::parse(std::vector<Data> &data, std::string file_path)
     file.close();
 }
 
-void CSV_Parser::parse(std::vector<Data> &data, std::string datafile_path, std::string labelfile_path)
+void CSV_Parser::parse(std::vector<Data*> &data, std::string datafile_path, std::string labelfile_path)
 {
     // no implementation here
 }

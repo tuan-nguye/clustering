@@ -10,8 +10,8 @@ class Data;
 class Parser
 {
     public:
-        virtual void parse(std::vector<Data> &data, std::string datafile_path) = 0;
-        virtual void parse(std::vector<Data> &data, std::string datafile_path, std::string labelfile_path) = 0;
+        virtual void parse(std::vector<Data*> &data, std::string datafile_path) = 0;
+        virtual void parse(std::vector<Data*> &data, std::string datafile_path, std::string labelfile_path) = 0;
 };
 
 #endif
