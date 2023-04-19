@@ -6,11 +6,14 @@
 class Data
 {
     public:
+        Data() {}
+        Data(std::string label): label(label) {}
         std::vector<float> attributes;
-        
+        std::string label;
+
         std::string to_string()
         {
-            std::string out = "[";
+            std::string out = "label: " + label + ", [";
             bool first = true;
 
             for(float f : attributes)

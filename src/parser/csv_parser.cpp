@@ -1,8 +1,8 @@
 #include "parser/csv_parser.h"
-#include "data/labeled_data.h"
+#include "data/data.h"
 #include <fstream>
 
-void CSV_Parser::parse(std::vector<Data*> &data, std::string file_path)
+void CSV_Parser::parse(std::vector<Data> &data, std::string file_path)
 {
     std::cout << "CSV_Parser" << std::endl;
     std::ifstream file(file_path);
@@ -31,21 +31,21 @@ void CSV_Parser::parse(std::vector<Data*> &data, std::string file_path)
         }
         vals.push_back(line);
 
-        Labeled_Data *ld = new Labeled_Data(vals.back());
+        Data d = Data(vals.back());
         vals.pop_back();
 
         for(std::string v : vals)
         {
-            ld->attributes.push_back(std::stof(v));
+            d.attributes.push_back(std::stof(v));
         }
 
-        data.push_back(ld);
+        data.push_back(d);
     }
 
     file.close();
 }
 
-void CSV_Parser::parse(std::vector<Data*> &data, std::string datafile_path, std::string labelfile_path)
+void CSV_Parser::parse(std::vector<Data> &data, std::string datafile_path, std::string labelfile_path)
 {
     // no implementation here
 }

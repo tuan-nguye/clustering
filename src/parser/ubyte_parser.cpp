@@ -1,14 +1,14 @@
 #include <fstream>
 
 #include "parser/ubyte_parser.h"
-#include "data/labeled_data.h"
+#include "data/data.h"
 
-void Ubyte_Parser::parse(std::vector<Data*> &data, std::string datafile_path)
+void Ubyte_Parser::parse(std::vector<Data> &data, std::string datafile_path)
 {
     // no implementation here
 }
 
-void Ubyte_Parser::parse(std::vector<Data*> &data, std::string datafile_path, std::string labelfile_path)
+void Ubyte_Parser::parse(std::vector<Data> &data, std::string datafile_path, std::string labelfile_path)
 {
     std::ifstream datafile(datafile_path, std::ios::binary);  // open the file for reading in binary mode
     std::ifstream labelfile(labelfile_path, std::ios::binary);
@@ -53,15 +53,15 @@ void Ubyte_Parser::parse(std::vector<Data*> &data, std::string datafile_path, st
         unsigned char c;
         labelfile.read((char*) &c, 1);
         std::string label = std::to_string(c);
-        Data *lb = new Labeled_Data(label);
+        Data d = Data(label);
 
         for (int j = 0; j < num_rows * num_cols; ++j) {
             datafile.read((char*) &c, 1);  // read one byte at a time
             float f = float(c);
-            lb->attributes.push_back(f);
+            d.attributes.push_back(f);
         }
         
-        data.push_back(lb);
+        data.push_back(d);
     }
 
     datafile.close();  // don't forget to close the file
