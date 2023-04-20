@@ -35,9 +35,13 @@ int main()
     
     Rand_Index ri = Rand_Index();
     Adjusted_Rand_Index ari = Adjusted_Rand_Index();
-    Evaluation *eval = &ari;
+    std::vector<Evaluation*> eval_list = {&ri, &ari};
 
-    std::cout << "Rand Index: " << eval->execute(clustering_result) << std::endl;
+    for(auto &metric : eval_list)
+    {
+        std::cout << typeid(*metric).name() << ": " << metric->execute(clustering_result) << std::endl;
+    }
 
+    
     return 0;
 }

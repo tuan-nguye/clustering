@@ -47,23 +47,6 @@ class Adjusted_Rand_Index: public Evaluation
                 count[label_clus]++;
             }
 
-            for(auto &e1 : contingency_table)
-            {
-                for(auto &e2 : e1.second)
-                {
-                    std::cout << e1.first << ", " << e2.first << ": " << e2.second << "\n";
-                }
-            }
-
-            std::cout.flush();
-
-            std::cout << "count original labels" << std::endl;
-            for(auto &entry : count_orig) std::cout << entry.first << ": " << entry.second << "\n";
-
-            std::cout << "count cluster labels" << std::endl;
-            for(auto &entry : count_clus) std::cout << entry.first << ": " << entry.second << "\n";
-            std::cout.flush();
-
             long sum_orig_2 = 0;
             for(auto &e : count_orig)
             {
@@ -90,12 +73,12 @@ class Adjusted_Rand_Index: public Evaluation
                     sum_entries_2 += sum*(sum-1)/2;
                 }
             }
-
+            /*
             std::cout << "sum_entries_2: " << sum_entries_2 << "\n";
             std::cout << "sum_orig_2: " << sum_orig_2 << "\n";
             std::cout << "sum_clus_2: " << sum_clus_2 << "\n";
             std::cout << "n_2: " << n_2 << "\n";
-            std::cout.flush();
+            std::cout.flush();*/
 
             return double(sum_entries_2-(sum_orig_2*sum_clus_2)/n_2)/(0.5*(sum_orig_2+sum_clus_2) - (sum_orig_2*sum_clus_2)/n_2);
         }
