@@ -8,7 +8,7 @@ class Greedy_Joining: public Clustering
 {
     private:
     public:
-        std::map<Data*, int> execute(std::vector<Data*> input, double d);
+        std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d);
 };
 
 #endif

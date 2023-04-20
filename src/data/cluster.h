@@ -10,7 +10,7 @@ class Cluster: public std::vector<Data*>
 {
     public:
         std::vector<float> sum;
-        double sum_of_squares = 0;
+        float sum_of_squares = 0;
 };
 
 #endif

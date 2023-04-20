@@ -1,5 +1,6 @@
-#include <map>
+#include <unordered_map>
 #include <iostream>
+#include <string>
 
 #include "data/cluster.h"
 #include "data/cluster_vector.h"
@@ -11,10 +12,10 @@ class Clustering
 {
     protected:
         Cluster_Vector cls;
-        std::map<Cluster, double> f;
-        double d(int cl_size, double d)
+        std::unordered_map<Cluster*, float> f;
+        float d(int cl_size, float d)
         {
-            double res = cl_size*(cl_size-1)/2 * d*d;
+            float res = (cl_size*(cl_size-1))/2 * d*d;
             //std::cout << "d: " << res << std::endl;
             return res;
         }
@@ -25,7 +26,7 @@ class Clustering
             f.clear();
         }
     public:
-        virtual std::map<Data*, int> execute(std::vector<Data*> input, double d) = 0;
+        virtual std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d) = 0;
 };
 
 #endif
