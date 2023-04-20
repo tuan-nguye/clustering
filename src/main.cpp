@@ -6,6 +6,7 @@
 #include "algorithm/greedy_joining.h"
 #include "eval/rand_index.h"
 #include "eval/adjusted_rand_index.h"
+#include "eval/silhouette_score.h"
 
 int main()
 {
@@ -35,7 +36,8 @@ int main()
     
     Rand_Index ri = Rand_Index();
     Adjusted_Rand_Index ari = Adjusted_Rand_Index();
-    std::vector<Evaluation*> eval_list = {&ri, &ari};
+    Silhouette_Score ss = Silhouette_Score();
+    std::vector<Evaluation*> eval_list = {&ri, &ari, &ss};
 
     for(auto &metric : eval_list)
     {

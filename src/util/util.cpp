@@ -41,3 +41,18 @@ float Util::inner_product(std::vector<float> v1, std::vector<float> v2)
     float scalar = std::inner_product(v1.begin(), v1.end(), v2.begin(), 0.0f);
     return scalar;
 }
+
+float Util::euclidean_distance(std::vector<float> v1, std::vector<float> v2)
+{
+    if(v1.size() != v2.size()) throw std::invalid_argument("vectors have different size, can't calculate scalar product");
+    
+    float dist = 0.0f;
+
+    for(int i = 0; i < v1.size(); i++)
+    {
+        float diff = v1[i]-v2[i];
+        dist += diff*diff;
+    }
+
+    return sqrt(dist);
+}
