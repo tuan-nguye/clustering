@@ -6,23 +6,12 @@
 #define __cluster_include__
 
 
-class Cluster
+class Cluster: public std::vector<Data*>
 {
-    private:
     public:
         std::vector<Data*> elements;
-        long sum = 0;
-        long square_sum = 0;
-        
-        void add_element(Data *d)
-        {
-            elements.push_back(d);
-        }
-
-        void add_all_elements(std::vector<Data*> ele)
-        {
-            elements.insert(elements.end(), ele.begin(), ele.end());
-        }
+        std::vector<float> sum;
+        double sum_of_squares = 0;
 };
 
 #endif

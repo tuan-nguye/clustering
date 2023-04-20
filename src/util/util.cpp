@@ -4,7 +4,7 @@
 
 #include "util.h"
 
-double Util::square_sum(std::vector<float> vals)
+double Util::sum_of_squares(std::vector<float> vals)
 {
     double square_magnitude = 0.0;
 
@@ -18,7 +18,7 @@ double Util::square_sum(std::vector<float> vals)
 
 double Util::magnitude(std::vector<float> vals)
 {
-    return sqrt(square_sum(vals));
+    return sqrt(sum_of_squares(vals));
 }
 
 double Util::scalar_product(std::vector<float> v1, std::vector<float> v2)

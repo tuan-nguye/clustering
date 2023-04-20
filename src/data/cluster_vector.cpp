@@ -1,28 +1,21 @@
 #include "data/cluster_vector.h"
 
-void Cluster_Vector::add_data(Data *data)
-{
-    Cluster cl;
-    cl.add_element(data);
-    clusters.push_back(cl);
-}
-
 int Cluster_Vector::join(int i, int j)
 {
     if(i == j) return -1;
     else if(i > j) std::swap(i, j);
 
     // add all elements from cl2 to cl1
-    Cluster cl1 = clusters[i], cl2 = clusters[j];
-    cl1.add_all_elements(cl2.elements);
+    Cluster cl1 = (*this)[i], cl2 = (*this)[j];
+    cl1.insert(cl1.end(), cl2.begin(), cl2.end());
 
     // update sum and square_sum
-    cl1.sum += cl2.sum;
-    cl1.square_sum += cl2.square_sum;
+    for(int i = 0; i < cl1.sum.size(); i++) cl1.sum[i] += cl2.sum[i];
+    cl1.sum_of_squares += cl2.sum_of_squares;
 
     // move last cluster to position j and remove cl2
-    clusters[j] = clusters.back();
-    clusters.pop_back();
+    (*this)[j] = back();
+    pop_back();
 
     return i;
 }
