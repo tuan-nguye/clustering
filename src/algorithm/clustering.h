@@ -1,4 +1,5 @@
 #include <map>
+#include <iostream>
 
 #include "data/cluster.h"
 #include "data/cluster_vector.h"
@@ -13,7 +14,9 @@ class Clustering
         std::map<Cluster, double> f;
         double d(int cl_size, double d)
         {
-            return cl_size*(cl_size-1)/2 * d*d;
+            double res = cl_size*(cl_size-1)/2 * d*d;
+            //std::cout << "d: " << res << std::endl;
+            return res;
         }
 
         void reset_state()

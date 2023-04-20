@@ -3,6 +3,7 @@
 #include "parser/csv_parser.h"
 #include "parser/ubyte_parser.h"
 #include "data/data.h"
+#include "algorithm/greedy_joining.h"
 
 int main()
 {
@@ -13,31 +14,18 @@ int main()
     CSV_Parser csv_parser;
     parser = &csv_parser;
     parser->parse(data, "./res/iris/iris_data.data");
-
-    
-    for(auto it = data.begin(); it != data.end(); it++)
-    {
-        std::cout << (*it)->to_string() << std::endl;
-    }
-
     std::cout << "number of data objects: " << data.size() << std::endl;
 
-    // ubyte test
-    data.clear();
-    Ubyte_Parser ubyte_parser;
-    parser = &ubyte_parser;
-    parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
+    Greedy_Joining gr_joining;
+    Clustering *clustering = &gr_joining;
 
-    std::cout << "number of data objects: " << data.size() << std::endl;
+    double d = 2.5;
+    std::map<Data*, int> clustering_result = clustering->execute(data, d);
 
-    Data *d = data[0];
-    for(int i = 0; i < d->attributes.size(); i++)
+    for(auto &entry : clustering_result)
     {
-        if(i % 28 == 0) std::cout << '\n';
-        char c = (d->attributes[i] != 0.0) ? char(219) : '.';
-        std::cout << c << c;
+        std::cout << "cl_label: " << entry.second << ", " << entry.first->to_string() << std::endl;
     }
-    std::cout << std::endl << "label: " << d->label << std::endl;
 
     return 0;
 }
