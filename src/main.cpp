@@ -17,10 +17,10 @@ int main()
     CSV_Parser csv_parser;
     Ubyte_Parser ubyte_parser;
 
-    parser = &csv_parser;
-    parser->parse(data, "./res/iris/iris_data.data");
-    //parser = &ubyte_parser;
-    //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
+    //parser = &csv_parser;
+    //parser->parse(data, "./res/iris/iris_data.data");
+    parser = &ubyte_parser;
+    parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     Greedy_Joining gr_joining;

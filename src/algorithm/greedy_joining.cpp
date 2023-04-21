@@ -34,7 +34,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         {
             Cluster cl1 = *cls[i];
             float cl1_size = cl1.size();
-            //std::cout << i << std::endl;
+            std::cout << i << std::endl;
             for(int j = i+1; j < num_cls; j++)
             {
                 //std::cout << "(" << i << ", " << j << ")" << std::endl;
