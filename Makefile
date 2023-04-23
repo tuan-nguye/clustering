@@ -44,3 +44,12 @@ $(shell mkdir -p $(OBJDIR))
 
 run:
 	$(OBJDIR)/$(OUTPUT)
+
+# run tests
+
+TEST_OUTPUT = tests
+
+test: $(OBJDIR)/$(OUTPUT) run_test
+
+run_test:
+	$(OBJDIR)/$(TEST_OUTPUT)

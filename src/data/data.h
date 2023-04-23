@@ -4,12 +4,11 @@
 #ifndef __data_include__
 #define __data_include__
 
-class Data
+class Data: public std::vector<float>
 {
     public:
         Data() {}
         Data(std::string label): label(label) {}
-        std::vector<float> attributes;
         std::string label;
 
         std::string to_string()
@@ -17,7 +16,7 @@ class Data
             std::string out = "label: " + label + ", [";
             bool first = true;
 
-            for(float f : attributes)
+            for(float f : *this)
             {
                 if(first) first = false;
                 else out += ", ";

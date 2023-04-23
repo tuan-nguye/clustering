@@ -9,6 +9,7 @@
 class Cluster_Vector: public std::vector<Cluster*>
 {
     public:
+        Cluster* add_empty_cluster();
         // join the clusters on index i and j
         // return the index of the new cluster
         int join(int i, int j);

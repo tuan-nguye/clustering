@@ -58,7 +58,7 @@ void Ubyte_Parser::parse(std::vector<Data*> &data, std::string datafile_path, st
         for (int j = 0; j < num_rows * num_cols; ++j) {
             datafile.read((char*) &c, 1);  // read one byte at a time
             float f = float(c);
-            d->attributes.push_back(f);
+            d->push_back(f);
         }
         
         data.push_back(d);

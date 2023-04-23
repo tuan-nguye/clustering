@@ -12,11 +12,10 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
 
     for(Data *d : input)
     {
-        Cluster *cl = new Cluster();
-        for(float f : d->attributes) cl->sum.push_back(f);
-        cl->sum_of_squares = Util::sum_of_squares(d->attributes);
+        Cluster *cl = cls.add_empty_cluster();
         cl->push_back(d);
-        cls.push_back(cl);
+        for(float f : *d) cl->get_sum().push_back(f);
+        cl->sum_of_squares = Util::sum_of_squares(*d);
     }
 
     for(Cluster *cl : cls)
@@ -32,15 +31,15 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
 
         for(int i = 0; i < num_cls-1; i++)
         {
-            Cluster cl1 = *cls[i];
-            float cl1_size = cl1.size();
-            std::cout << i << std::endl;
+            Cluster *cl1 = cls[i];
+            float cl1_size = cl1->size();
+            //std::cout << i << std::endl;
             for(int j = i+1; j < num_cls; j++)
             {
                 //std::cout << "(" << i << ", " << j << ")" << std::endl;
-                Cluster cl2 = *cls[j];
-                float cl2_size = cl2.size();
-                float f_diff = cl1_size*cl2.sum_of_squares + cl2_size*cl1.sum_of_squares - 2*Util::scalar_product(cl1.sum, cl2.sum);
+                Cluster *cl2 = cls[j];
+                float cl2_size = cl2->size();
+                float f_diff = cl1_size*cl2->sum_of_squares + cl2_size*cl1->sum_of_squares - 2*Util::scalar_product(cl1->get_sum(), cl2->get_sum());
                 float d_diff = d(cl1_size, dist) + d(cl2_size, dist) - d(cl1_size+cl2_size, dist);
                 
                 if(f_diff+d_diff < f_best+d_best)

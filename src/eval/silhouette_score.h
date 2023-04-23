@@ -34,7 +34,7 @@ class Silhouette_Score: public Evaluation
                         for(auto &d2 : cl)
                         {
                             if(d1 == d2) continue;
-                            dist_sum += Util::euclidean_distance(d1->attributes, d2->attributes);
+                            dist_sum += Util::euclidean_distance(*d1, *d2);
                         }
                         a[d1] = dist_sum / (cl.size()-1);
                     }

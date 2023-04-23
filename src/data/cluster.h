@@ -8,9 +8,11 @@
 
 class Cluster: public std::vector<Data*>
 {
-    public:
+    private:
         std::vector<float> sum;
+    public:
         float sum_of_squares = 0;
+        std::vector<float>& get_sum() { return sum; }
 };
 
 #endif

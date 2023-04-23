@@ -36,7 +36,7 @@ void CSV_Parser::parse(std::vector<Data*> &data, std::string file_path)
 
         for(std::string v : vals)
         {
-            d->attributes.push_back(std::stof(v));
+            d->push_back(std::stof(v));
         }
 
         data.push_back(d);
