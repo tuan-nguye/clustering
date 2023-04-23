@@ -10,9 +10,11 @@
 class Cluster_Graph: public Cluster_Vector
 {
     private:
+        float d;
         Graph<Cluster*> graph;
     public:
-        int join(int i, int j);
+        Cluster_Graph(std::vector<Data*> data, float d);
+        int join(int i, int j) override;
 };
 
 #endif

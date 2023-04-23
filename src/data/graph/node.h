@@ -6,11 +6,11 @@
 template <typename T> class Node
 {
     private:
-        T *t;
+        T t;
         std::unordered_set<Node<T>*> children;
     public:
-        Node(T *t): t(t) {}
-        T* get_value() { return t; }
+        Node(T t): t(t) {}
+        T get_value() { return t; }
         std::unordered_set<Node<T>*>& get_children() { return children; }
 };
 
