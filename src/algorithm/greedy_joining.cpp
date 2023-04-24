@@ -27,7 +27,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         {
             Cluster *cl1 = cls_g[i];
             float cl1_size = cl1->size();
-            //std::cout << i << std::endl;
+            std::cout << i << std::endl;
             //std::cout << cl1->to_string() << ", children: ";
             std::vector<Cluster*> children;
             cls_g.get_neighbours(children, cl1);
