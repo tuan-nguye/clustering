@@ -32,6 +32,8 @@ template<typename T> class Graph
             {
                 remove_edge(t, next->get_value());
             }
+
+            delete node;
         }
 
         void add_edge(T t1, T t2)

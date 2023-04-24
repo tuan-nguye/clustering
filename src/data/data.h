@@ -13,7 +13,7 @@ class Data: public std::vector<float>
 
         std::string to_string()
         {
-            std::string out = "label: " + label + ", [";
+            std::string out = label + ":(";
             bool first = true;
 
             for(float f : *this)
@@ -23,7 +23,7 @@ class Data: public std::vector<float>
                 out += std::to_string(f);
             }
 
-            out += "]";
+            out += ")";
             return out;
         };
 };

@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "data/graph/cluster_graph.h"
 #include "util/util.h"
 
@@ -8,6 +10,7 @@ Cluster_Graph::Cluster_Graph(std::vector<Data*> data, float d): d(d)
     for(Data *dp : data)
     {
         Cluster *cl = add_empty_cluster();
+        cls_idx[cl] = size()-1;
         cl->push_back(dp);
         for(float f : *dp) cl->get_sum().push_back(f);
         cl->sum_of_squares = Util::sum_of_squares(*dp);
@@ -15,6 +18,7 @@ Cluster_Graph::Cluster_Graph(std::vector<Data*> data, float d): d(d)
         // add to graph
         graph.add_node(cl);
     }
+
 
     for(int i = 0; i < n-1; i++)
     {
@@ -44,6 +48,21 @@ int Cluster_Graph::join(int i, int j)
         graph.add_edge(cl1, next2);
     }
 
+    // update index map
+    Cluster *end = back();
+    cls_idx[end] = cls_idx[cl2];
+    cls_idx.erase(cl2);
+
     graph.remove_node(cl2);
     return Cluster_Vector::join(i, j);
+}
+
+void Cluster_Graph::get_neighbours(std::vector<Cluster*>& vec, Cluster *cl)
+{
+    graph.get_children(vec, cl);
+}
+
+int Cluster_Graph::get_cluster_index(Cluster *cl)
+{
+    return cls_idx[cl];
 }

@@ -18,8 +18,8 @@ int main()
     Ubyte_Parser ubyte_parser;
 
     parser = &csv_parser;
-    //parser->parse(data, "./res/iris/iris_data.data");
-    parser->parse(data, "./res/test/test_example.data");
+    parser->parse(data, "./res/iris/iris_data.data");
+    //parser->parse(data, "./res/test/test_example.data");
     //parser = &ubyte_parser;
     //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     std::cout << "number of data objects: " << data.size() << std::endl;
@@ -27,7 +27,7 @@ int main()
     Greedy_Joining gr_joining;
     Clustering *clustering = &gr_joining;
 
-    float d = 4.0f;
+    float d = 1.2f;
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
     
     for(auto &entry : clustering_result)
