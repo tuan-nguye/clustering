@@ -40,7 +40,7 @@ int Cluster_Graph::join(int i, int j)
 {
     Cluster *cl1 = (*this)[i], *cl2 = (*this)[j];
     std::vector<Cluster*> children2;
-    graph.get_children(children2, cl1);
+    graph.get_children(children2, cl2);
 
     for(Cluster *next2 : children2)
     {
