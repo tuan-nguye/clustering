@@ -7,6 +7,13 @@
 #include "eval/rand_index.h"
 #include "eval/adjusted_rand_index.h"
 #include "eval/silhouette_score.h"
+#include "data/structures/maptor.h"
+#include "data/graph/nearest_neighbour_graph.h"
+
+float compare(Data *&d1, Data *&d2)
+{
+    return Util::euclidean_distance(*d1, *d2);
+}
 
 int main()
 {
@@ -34,7 +41,26 @@ int main()
             std::cout << "eucl-dist: " << Util::euclidean_distance(*d1, *d2) << std::endl;
         }
     }*/
+    float (*cmp)(Data*&, Data*&);
+    cmp = &compare;
+    NN_Graph<Data*> nn_graph(4.0f, compare);
+    for(Data *&d : data) nn_graph.add_node(d);
 
+    for(Data *&d : nn_graph.get_all_values())
+    {
+        std::cout << d->to_string() << ", children: ";
+        std::vector<Data*> children;
+        nn_graph.get_children(children, d);
+
+        for(Data *c : children)
+        {
+            std::cout << c->to_string() << ", ";
+        }
+
+        std::cout << std::endl;
+    }
+
+    return 0;
     Greedy_Joining gr_joining;
     Clustering *clustering = &gr_joining;
 

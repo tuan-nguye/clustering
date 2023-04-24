@@ -8,7 +8,7 @@ template<typename T> class Maptor
 {
     private:
         std::vector<T> element_vec;
-        std::unordered_map<T> idx_map;
+        std::unordered_map<T, int> idx_map;
     public:
         void push_back(T &elem)
         {
@@ -17,9 +17,23 @@ template<typename T> class Maptor
             element_vec.push_back(elem);
         }
 
-        T& erase(T &elem)
+        const void push_back(const T &elem)
         {
-            if(!find(elem)) return NULL;
+            if(idx_map.find(elem) != idx_map.end()) return;
+            idx_map[elem] = element_vec.size();
+            element_vec.push_back(elem);
+        }
+        
+        void push_back(T &&elem)
+        {
+            if(idx_map.find(elem) != idx_map.end()) return;
+            idx_map[elem] = element_vec.size();
+            element_vec.push_back(elem);
+        }
+
+        bool erase(T &elem)
+        {
+            if(!find(elem)) return false;
             int idx = idx_map[elem];
             T &last = element_vec.back();
             element_vec[idx] = last;
@@ -27,6 +41,20 @@ template<typename T> class Maptor
 
             element_vec.pop_back();
             idx_map.erase(elem);
+            return true;
+        }
+
+        bool erase(T &&elem)
+        {
+            if(!find(elem)) return false;
+            int idx = idx_map[elem];
+            T &last = element_vec.back();
+            element_vec[idx] = last;
+            idx_map[last] = idx;
+
+            element_vec.pop_back();
+            idx_map.erase(elem);
+            return true;
         }
 
         int size() { return element_vec.size(); }

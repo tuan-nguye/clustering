@@ -1,31 +1,34 @@
 #include <vector>
 #include <unordered_map>
-#include <unordered_set>
 
 #include "data/graph/node.h"
+#include "data/structures/maptor.h"
 
-#ifndef __cluster_node_include__
-#define __cluster_node_include__
+#ifndef __graph_include__
+#define __graph_include__
 
 template<typename T> class Graph
 {
     private:
         std::unordered_map<T, Node<T>*> node_map;
-        Node<T>* get_node(T t)
+        Maptor<T> elements;
+    protected:
+        Node<T>* get_node(T &t)
         {
             return node_map[t];
         }
     public:
-        void add_node(T t)
+        void add_node(T &t)
         {
             Node<T> *node = new Node<T>(t);
             node_map[t] = node;
+            elements.push_back(t);
         }
 
-        void remove_node(T t)
+        void remove_node(T &t)
         {
             Node<T> *node = get_node(t);
-            std::unordered_set<Node<T>*> children_set = node->get_children();
+            Maptor<Node<T>*> &children_set = node->get_children();
             std::vector<Node<T>*> children(children_set.begin(), children_set.end());
 
             for(Node<T> *next : children)
@@ -34,37 +37,33 @@ template<typename T> class Graph
             }
 
             delete node;
+            elements.erase(t);
         }
 
-        void add_edge(T t1, T t2)
+        void add_edge(T &t1, T &t2)
         {
             Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
-            n1->get_children().insert(n2);
-            n2->get_children().insert(n1);
+            n1->get_children().push_back(n2);
+            n2->get_children().push_back(n1);
         }
 
-        void remove_edge(T t1, T t2)
+        void remove_edge(T &t1, T &t2)
         {
             Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
             n1->get_children().erase(n2);
             n2->get_children().erase(n1);
         }
 
-        void get_children(std::vector<T>& vec, T t)
+        void get_children(std::vector<T>& vec, T &t)
         {
-            std::unordered_set<Node<T>*>& children = get_node(t)->get_children();
+            Maptor<Node<T>*>& children = get_node(t)->get_children();
             vec.reserve(children.size());
             for(Node<T> *c : children) vec.push_back(c->get_value());
         }
 
-        void get_all_values(std::vector<T> &vec)
+        Maptor<T>& get_all_values()
         {
-            vec.reserve(node_map.size());
-
-            for(auto &entry : node_map)
-            {
-                vec.push_back(entry.second);
-            }
+            return elements;
         }
 
 };
