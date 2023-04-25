@@ -35,12 +35,12 @@ template<typename T> class Maptor
         {
             if(!find(elem)) return false;
             int idx = idx_map[elem];
+            idx_map.erase(elem);
             T &last = element_vec.back();
             element_vec[idx] = last;
             idx_map[last] = idx;
 
             element_vec.pop_back();
-            idx_map.erase(elem);
             return true;
         }
 
@@ -55,6 +55,12 @@ template<typename T> class Maptor
             element_vec.pop_back();
             idx_map.erase(elem);
             return true;
+        }
+
+        T* erase(T *pos)
+        {
+            if(!erase(*pos)) return &element_vec[size()];
+            return pos;
         }
 
         int size() { return element_vec.size(); }

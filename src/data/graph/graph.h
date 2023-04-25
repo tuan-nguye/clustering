@@ -28,12 +28,13 @@ template<typename T> class Graph
         void remove_node(T &t)
         {
             Node<T> *node = get_node(t);
-            Maptor<Node<T>*> &children_set = node->get_children();
-            std::vector<Node<T>*> children(children_set.begin(), children_set.end());
+            Maptor<Node<T>*> &children = node->get_children();
 
-            for(Node<T> *next : children)
+            auto it = children.begin();
+            while(it != children.end())
             {
-                remove_edge(t, next->get_value());
+                (*it)->get_children().erase(node);
+                it = children.erase(it);
             }
 
             delete node;

@@ -46,6 +46,9 @@ int main()
     NN_Graph<Data*> nn_graph(4.0f, compare);
     for(Data *&d : data) nn_graph.add_node(d);
 
+    nn_graph.remove_node(data[4]);
+    nn_graph.remove_node(data[0]);
+
     for(Data *&d : nn_graph.get_all_values())
     {
         std::cout << d->to_string() << ", children: ";
