@@ -4,6 +4,8 @@
 
 #include "data/graph/graph.h"
 
+extern int num_threads;
+
 #ifndef __nearest_neigbour_graph_include__
 #define __nearest_neigbour_graph_include__
 
@@ -15,9 +17,8 @@ template<typename T> class NN_Graph: protected Graph<T>
         
         void add_edges_parallel(T &t)
         {
-            std::mutex mtx;
             int size = get_all_elements().size();
-            int num_threads = 4;
+            std::mutex mtx;
             std::vector<std::thread> threads;
 
             for(int i = 0; i < num_threads; i++)

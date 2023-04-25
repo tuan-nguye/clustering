@@ -6,6 +6,7 @@
 #include "algorithm/greedy_joining.h"
 #include "util/util.h"
 
+extern int num_threads;
 
 std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*> input, float dist)
 {
@@ -64,7 +65,6 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
 
 void Greedy_Joining::find_best_pair_parallel(Cluster *best_pair[2], float best_diff[2], Cluster_Graph &cls_graph)
 {
-    int num_threads = 4;
     int cls_size = cls_graph.size();
     std::mutex best_mutex;
     std::vector<std::thread> threads;

@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <thread>
+
 #include "parser/csv_parser.h"
 #include "parser/ubyte_parser.h"
 #include "data/data.h"
@@ -10,6 +12,8 @@
 #include "data/structures/maptor.h"
 #include "data/graph/nearest_neighbour_graph.h"
 #include "util/time/time.h"
+
+int num_threads = std::thread::hardware_concurrency();
 
 int main()
 {
