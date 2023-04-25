@@ -73,8 +73,8 @@ void Greedy_Joining::find_best_pair_parallel(Cluster *best_pair[2], float best_d
     {
         int start = i*cls_size/num_threads;
         int end = (i+1)*cls_size/num_threads;
+        if(start == end) continue;
         threads.emplace_back(&Greedy_Joining::find_best_pair, this, best_pair, best_diff, std::ref(best_mutex), std::ref(cls_graph), start, end);
-        //threads.emplace_back(&Greedy_Joining::test, this, best_pair, best_diff, std::ref(best_mutex), std::ref(cls_graph), start, end);
     }
 
     for(std::thread &thread : threads)
@@ -125,9 +125,4 @@ void Greedy_Joining::find_best_pair(Cluster *best_pair[2], float best_diff[2], s
         best_diff[0] = local_best_diff[0];
         best_diff[1] = local_best_diff[1];
     }
-}
-
-void Greedy_Joining::test(Cluster *best[2], float best_diff[2], std::mutex &best_mutex, Cluster_Graph &cls_graph, int start, int end)
-{
-    std::cout << "test " << std::endl;
 }

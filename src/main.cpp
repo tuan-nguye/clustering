@@ -11,17 +11,11 @@
 #include "data/graph/nearest_neighbour_graph.h"
 #include "util/time/time.h"
 
-float compare(Data *&d1, Data *&d2)
-{
-    return Util::euclidean_distance(*d1, *d2);
-}
-
 int main()
 {
-    Parser *parser;
     std::vector<Data*> data;
 
-    // csv test
+    Parser *parser;
     CSV_Parser csv_parser;
     Ubyte_Parser ubyte_parser;
 
@@ -42,29 +36,6 @@ int main()
             std::cout << "eucl-dist: " << Util::euclidean_distance(*d1, *d2) << std::endl;
         }
     }*/
-    /*float (*cmp)(Data*&, Data*&);
-    cmp = &compare;
-    NN_Graph<Data*> nn_graph(4.0f, compare);
-    for(Data *&d : data) nn_graph.add_node(d);
-
-    nn_graph.remove_node(data[4]);
-    nn_graph.remove_node(data[0]);
-
-    for(Data *&d : nn_graph.get_all_elements())
-    {
-        std::cout << d->to_string() << ", children: ";
-        std::vector<Data*> children;
-        nn_graph.get_children(children, d);
-
-        for(Data *c : children)
-        {
-            std::cout << c->to_string() << ", ";
-        }
-
-        std::cout << std::endl;
-    }
-
-    return 0;*/
     Time timer;
 
     Greedy_Joining gr_joining;
