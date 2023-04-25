@@ -9,6 +9,7 @@
 #include "eval/silhouette_score.h"
 #include "data/structures/maptor.h"
 #include "data/graph/nearest_neighbour_graph.h"
+#include "util/time/time.h"
 
 float compare(Data *&d1, Data *&d2)
 {
@@ -64,15 +65,19 @@ int main()
     }
 
     return 0;*/
+    Time timer;
+
     Greedy_Joining gr_joining;
     Clustering *clustering = &gr_joining;
 
+    timer.start();
     float d = 1.2f; // test: 4.0, iris: 1.2, mnist: 1500.0
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
-    
+    std::cout << "runtime in seconds: " << timer.stop() << std::endl;
+
     for(auto &entry : clustering_result)
     {
-        std::cout << "cl_label: " << entry.second << ", " << entry.first->to_string() << std::endl;
+        //std::cout << "cl_label: " << entry.second << ", " << entry.first->to_string() << std::endl;
     }
     
     Rand_Index ri = Rand_Index();

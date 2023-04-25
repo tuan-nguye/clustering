@@ -29,7 +29,7 @@ class Cluster_Graph: public NN_Graph<Cluster*>
         void get_neighbours(std::vector<Cluster*>& vec, Cluster *cl);
         Cluster** begin();
         Cluster** end();
-        // maybe operator[] for access
+        Cluster*& operator[](int idx);
 
         // comparator for nearest neighbour graph
         static float compare(Cluster *&cl1, Cluster *&cl2);

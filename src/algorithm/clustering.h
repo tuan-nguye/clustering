@@ -3,7 +3,6 @@
 #include <string>
 
 #include "data/cluster.h"
-#include "data/cluster_vector.h"
 #include "data/graph/cluster_graph.h"
 
 #ifndef __clustering_include__

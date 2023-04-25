@@ -83,6 +83,8 @@ template<typename T> class Maptor
 
         T* end() { return &element_vec[size()]; }
         const T* end() const { return &element_vec[size()]; }
+
+        T& operator[] (int idx) { return element_vec[idx]; }
 };
 
 #endif
