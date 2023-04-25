@@ -10,14 +10,27 @@ class Cluster: public std::vector<Data*>
 {
     private:
         std::vector<float> sum;
-    public:
         float sum_of_squares = 0;
+    public:
         std::vector<float>& get_sum() { return sum; }
+
+        void add_to_sum(std::vector<float>& vec)
+        {
+            for(int i = 0; i < sum.size(); i++)
+            {
+                sum[i] += vec[i];
+            }
+        }
+
+        void add_to_sum_of_squares(float f) { sum_of_squares += f; }
+
+        float get_sum_of_squares() { return sum_of_squares; }
+
         void join(Cluster& cl)
         {
             std::vector<float> &sum_other = cl.get_sum();
-            for(int i = 0; i < sum.size(); i++) sum[i] += sum_other[i];
-            sum_of_squares += cl.sum_of_squares; 
+            add_to_sum(cl.get_sum());
+            add_to_sum_of_squares(cl.get_sum_of_squares());
         }
 
         std::string to_string()

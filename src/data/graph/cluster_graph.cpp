@@ -13,7 +13,7 @@ Cluster_Graph::Cluster_Graph(std::vector<Data*> data, float d): d(d)
         cls_idx[cl] = size()-1;
         cl->push_back(dp);
         for(float f : *dp) cl->get_sum().push_back(f);
-        cl->sum_of_squares = Util::sum_of_squares(*dp);
+        cl->add_to_sum_of_squares(Util::sum_of_squares(*dp));
 
         // add to graph
         graph.add_node(cl);

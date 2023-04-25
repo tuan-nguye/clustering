@@ -25,8 +25,8 @@ int main()
     Ubyte_Parser ubyte_parser;
 
     parser = &csv_parser;
-    //parser->parse(data, "./res/iris/iris_data.data");
-    parser->parse(data, "./res/test/test_example.data");
+    parser->parse(data, "./res/iris/iris_data.data");
+    //parser->parse(data, "./res/test/test_example.data");
     //parser = &ubyte_parser;
     //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     std::cout << "number of data objects: " << data.size() << std::endl;
@@ -41,7 +41,7 @@ int main()
             std::cout << "eucl-dist: " << Util::euclidean_distance(*d1, *d2) << std::endl;
         }
     }*/
-    float (*cmp)(Data*&, Data*&);
+    /*float (*cmp)(Data*&, Data*&);
     cmp = &compare;
     NN_Graph<Data*> nn_graph(4.0f, compare);
     for(Data *&d : data) nn_graph.add_node(d);
@@ -63,16 +63,16 @@ int main()
         std::cout << std::endl;
     }
 
-    return 0;
+    return 0;*/
     Greedy_Joining gr_joining;
     Clustering *clustering = &gr_joining;
 
-    float d = 4.0f; // test: 4.0, iris: 1.2, mnist: 1500.0
+    float d = 1.2f; // test: 4.0, iris: 1.2, mnist: 1500.0
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
     
     for(auto &entry : clustering_result)
     {
-        //std::cout << "cl_label: " << entry.second << ", " << entry.first->to_string() << std::endl;
+        std::cout << "cl_label: " << entry.second << ", " << entry.first->to_string() << std::endl;
     }
     
     Rand_Index ri = Rand_Index();

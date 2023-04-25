@@ -20,14 +20,14 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     while(1)
     {
         int num_cls = cls_g.size();
-        float f_best = 1e10, d_best = 1e10;
+        float f_best = 1e38, d_best = 1e38;
         int best_pair[] = {-1, -1};
 
         for(int i = 0; i < num_cls; i++)
         {
             Cluster *cl1 = cls_g[i];
             float cl1_size = cl1->size();
-            std::cout << i << std::endl;
+            //std::cout << i << std::endl;
             //std::cout << cl1->to_string() << ", children: ";
             std::vector<Cluster*> children;
             cls_g.get_neighbours(children, cl1);
@@ -36,7 +36,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
                 //std::cout << cl2->to_string() << ", ";
                 //std::cout << "(" << i << ", " << j << ")" << std::endl;
                 float cl2_size = cl2->size();
-                float f_diff = cl1_size*cl2->sum_of_squares + cl2_size*cl1->sum_of_squares - 2*Util::scalar_product(cl1->get_sum(), cl2->get_sum());
+                float f_diff = cl1_size*cl2->get_sum_of_squares() + cl2_size*cl1->get_sum_of_squares() - 2*Util::scalar_product(cl1->get_sum(), cl2->get_sum());
                 float d_diff = d(cl1_size, dist) + d(cl2_size, dist) - d(cl1_size+cl2_size, dist);
                 
                 if(f_diff+d_diff < f_best+d_best)
