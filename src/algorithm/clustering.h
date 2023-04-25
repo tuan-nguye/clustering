@@ -12,18 +12,15 @@
 class Clustering
 {
     protected:
-        Cluster_Vector cls;
         std::unordered_map<Cluster*, float> f;
         float d(int cl_size, float d)
         {
             float res = (cl_size*(cl_size-1))/2 * d*d;
-            //std::cout << "d: " << res << std::endl;
             return res;
         }
 
         void reset_state()
         {
-            cls.clear();
             f.clear();
         }
     public:

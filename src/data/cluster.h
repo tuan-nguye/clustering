@@ -16,10 +16,21 @@ class Cluster: public std::vector<Data*>
 
         void add_to_sum(std::vector<float>& vec)
         {
-            for(int i = 0; i < sum.size(); i++)
+            if(sum.size() < vec.size()) sum.reserve(vec.size());
+            if(sum.empty())
             {
-                sum[i] += vec[i];
+                for(int i = 0; i < vec.size(); i++)
+                {
+                    sum.push_back(vec[i]);
+                }
+            } else
+            {
+                for(int i = 0; i < sum.size(); i++)
+                {
+                    sum[i] += vec[i];
+                }
             }
+            
         }
 
         void add_to_sum_of_squares(float f) { sum_of_squares += f; }
@@ -28,6 +39,9 @@ class Cluster: public std::vector<Data*>
 
         void join(Cluster& cl)
         {
+            // add all elements
+            insert(end(), cl.begin(), cl.end());
+            // update values
             std::vector<float> &sum_other = cl.get_sum();
             add_to_sum(cl.get_sum());
             add_to_sum_of_squares(cl.get_sum_of_squares());

@@ -62,7 +62,9 @@ template<typename T> class Graph
             for(Node<T> *c : children) vec.push_back(c->get_value());
         }
 
-        Maptor<T>& get_all_values()
+        int size() { return elements.size(); }
+
+        Maptor<T>& get_all_elements()
         {
             return elements;
         }

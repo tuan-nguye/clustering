@@ -49,7 +49,7 @@ int main()
     nn_graph.remove_node(data[4]);
     nn_graph.remove_node(data[0]);
 
-    for(Data *&d : nn_graph.get_all_values())
+    for(Data *&d : nn_graph.get_all_elements())
     {
         std::cout << d->to_string() << ", children: ";
         std::vector<Data*> children;

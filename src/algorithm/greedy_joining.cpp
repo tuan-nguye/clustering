@@ -8,29 +8,33 @@
 std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*> input, float dist)
 {
     reset_state();
-    Cluster_Graph cls_g(input, dist);
+    Cluster_Graph cls_graph(dist);
+    for(Data *d : input) cls_graph.add_data(d);
+    cls_graph.init_clusters_fine_grained();
 
     float cost_total = 0;
 
-    for(Cluster *cl : cls_g)
+    for(Cluster *cl : cls_graph)
     {
         f[cl] = 0;
+        //for(float f : cl->get_sum()) std::cout << f << ", ";
+        //std::cout << std::endl;
     }
 
     while(1)
     {
-        int num_cls = cls_g.size();
+        int num_cls = cls_graph.size();
         float f_best = 1e38, d_best = 1e38;
-        int best_pair[] = {-1, -1};
+        Cluster *best_pair[] = {nullptr, nullptr};
+        //std::cout << "cls_graph.size() = " << num_cls << std::endl;
 
-        for(int i = 0; i < num_cls; i++)
+        for(Cluster *cl1 : cls_graph)
         {
-            Cluster *cl1 = cls_g[i];
             float cl1_size = cl1->size();
             //std::cout << i << std::endl;
             //std::cout << cl1->to_string() << ", children: ";
             std::vector<Cluster*> children;
-            cls_g.get_neighbours(children, cl1);
+            cls_graph.get_neighbours(children, cl1);
             for(Cluster *cl2 : children)
             {
                 //std::cout << cl2->to_string() << ", ";
@@ -43,41 +47,41 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
                 {
                     f_best = f_diff;
                     d_best = d_diff;
-                    best_pair[0] = i;
-                    best_pair[1] = cls_g.get_cluster_index(cl2);
+                    best_pair[0] = cl1;
+                    best_pair[1] = cl2;
                 }
             }
             //std::cout << std::endl;;
         }
 
-        std::cout << "best pair: (" << best_pair[0] << ", " << best_pair[1] << ")" << std::endl;
+        //if(best_pair[0] != nullptr) std::cout << "best pair: (" << best_pair[0]->to_string() << ", " << best_pair[1]->to_string() << ")" << std::endl;
         std::cout << "f_best: " << f_best << ", d_best: " << d_best << std::endl;
 
         // if the score is worse then stop
         if(f_best+d_best >= 0) break;
         
         // store old values for updated value
-        Cluster *cl1 = cls_g[best_pair[0]], *cl2 = cls_g[best_pair[1]];
+        Cluster *cl1 = best_pair[0], *cl2 = best_pair[1];
         float f_cl1 = f[cl1], f_cl2 = f[cl2];
         f.erase(cl1);
         f.erase(cl2);
         
         // join clusters and update the score
-        int idx_joined = cls_g.join(best_pair[0], best_pair[1]);
-        if(idx_joined == -1) continue;
-        Cluster *cl_joined = cls_g[idx_joined];
+        Cluster *cl_joined = cls_graph.join(best_pair[0], best_pair[1]);
         f[cl_joined] = f_cl1 + f_cl2 + f_best;
 
         cost_total += f_best + d_best;
     }
     
     std::unordered_map<Data*, std::string> cluster_map;
-    for(int i = 0; i < cls_g.size(); i++)
+    int label = 0;
+    for(auto &cl : cls_graph)
     {
-        for(auto &it : *cls_g[i])
+        for(auto &elem : *cl)
         {
-            cluster_map[it] = std::to_string(i);
+            cluster_map[elem] = std::to_string(label);
         }
+        label++;
     }
 
     return cluster_map;

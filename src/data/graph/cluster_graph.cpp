@@ -3,66 +3,63 @@
 #include "data/graph/cluster_graph.h"
 #include "util/util.h"
 
+Cluster_Graph::Cluster_Graph(float d): NN_Graph<Cluster*>(d, compare), d(d) {}
 
-Cluster_Graph::Cluster_Graph(std::vector<Data*> data, float d): d(d)
+void Cluster_Graph::add_data(Data *d)
 {
-    int n = data.size();
-    for(Data *dp : data)
-    {
-        Cluster *cl = add_empty_cluster();
-        cls_idx[cl] = size()-1;
-        cl->push_back(dp);
-        for(float f : *dp) cl->get_sum().push_back(f);
-        cl->add_to_sum_of_squares(Util::sum_of_squares(*dp));
-
-        // add to graph
-        graph.add_node(cl);
-    }
-
-
-    for(int i = 0; i < n-1; i++)
-    {
-        Cluster *cl1 = (*this)[i];
-        for(int j = i+1; j < n; j++)
-        {
-            Cluster *cl2 = (*this)[j];
-            float eucl_dist = Util::euclidean_distance(*(*cl1)[0], *(*cl2)[0]);
-
-            if(eucl_dist <= d)
-            {
-                graph.add_edge(cl1, cl2);
-            }
-        }
-    }
+    data.push_back(d);
 }
 
-int Cluster_Graph::join(int i, int j)
+int Cluster_Graph::size()
 {
-    Cluster *cl1 = (*this)[i], *cl2 = (*this)[j];
-    std::vector<Cluster*> children2;
-    graph.get_children(children2, cl2);
-
-    for(Cluster *next2 : children2)
-    {
-        if(cl1 == next2) continue;
-        graph.add_edge(cl1, next2);
-    }
-
-    // update index map
-    Cluster *end = back();
-    cls_idx[end] = cls_idx[cl2];
-    cls_idx.erase(cl2);
-
-    graph.remove_node(cl2);
-    return Cluster_Vector::join(i, j);
+    return NN_Graph::size();
 }
+
+Cluster* Cluster_Graph::join(Cluster *cl1, Cluster *cl2)
+{
+    // TODO swap add elements of smaller cluster to bigger
+
+    // update elements and values
+    cl1->join(*cl2);
+
+    // update graph by making union of their node children
+    NN_Graph::combine_node_to_from(cl1, cl2);
+    delete cl2;
+
+    return cl1;
+}
+
+
 
 void Cluster_Graph::get_neighbours(std::vector<Cluster*>& vec, Cluster *cl)
 {
-    graph.get_children(vec, cl);
+    NN_Graph::get_children(vec, cl);
 }
 
-int Cluster_Graph::get_cluster_index(Cluster *cl)
+void Cluster_Graph::init_clusters_fine_grained()
 {
-    return cls_idx[cl];
+    for(Data *d : data)
+    {
+        Cluster *cl = new Cluster();
+        cl->push_back(d);
+        //std::vector<float> &sum = cl->get_sum();
+        cl->add_to_sum(*d);
+        cl->add_to_sum_of_squares(Util::sum_of_squares(*d));
+        NN_Graph::add_node(cl);
+    }
+}
+
+Cluster** Cluster_Graph::begin()
+{
+    return NN_Graph::get_all_elements().begin();
+}
+
+Cluster** Cluster_Graph::end()
+{
+    return NN_Graph::get_all_elements().end();
+}
+
+float Cluster_Graph::compare(Cluster *&cl1, Cluster *&cl2)
+{
+    return Util::euclidean_distance(*(*cl1)[0], *(*cl2)[0]);
 }
