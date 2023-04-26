@@ -12,6 +12,7 @@ class Cluster_Graph: public NN_Graph<Cluster*>
     private:
         float d;
         std::vector<Data*> data;
+        
     public:
         Cluster_Graph(float d);
         void add_data(Data *d);

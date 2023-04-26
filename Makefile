@@ -4,7 +4,7 @@ rwildcard = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(
 OBJDIR = ./build
 SRCDIR = ./src
 
-CPPFLAGS = -I $(SRCDIR)
+CPPFLAGS = -I $(SRCDIR) -Ofast
 
 # commands
 CPP = g++
