@@ -56,3 +56,8 @@ float Util::euclidean_distance(std::vector<float> &v1, std::vector<float> &v2)
 
     return sqrt(dist);
 }
+
+float Util::d_all_pairs(int size, float d)
+{
+    return (size*(size-1))/2 * d*d;
+}

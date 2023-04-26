@@ -50,10 +50,14 @@ int main()
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
     std::cout << "runtime in seconds: " << timer.stop() << std::endl;
 
+    std::unordered_set<std::string> labels;
     for(auto &entry : clustering_result)
     {
         //std::cout << "cl_label: " << entry.second << ", " << entry.first->to_string() << std::endl;
+        labels.insert(entry.second);
     }
+
+    std::cout << "number of clusters: " << labels.size() << std::endl;
     
     Rand_Index ri = Rand_Index();
     Adjusted_Rand_Index ari = Adjusted_Rand_Index();

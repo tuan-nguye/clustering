@@ -11,17 +11,9 @@ extern int num_threads;
 std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*> input, float dist)
 {
     distance = dist;
-    reset_state();
     Cluster_Graph cls_graph(dist);
     for(Data *d : input) cls_graph.add_data(d);
     cls_graph.init_clusters_fine_grained();
-
-    float cost_total = 0;
-
-    for(Cluster *cl : cls_graph)
-    {
-        f[cl] = 0;
-    }
 
     while(1)
     {
@@ -31,22 +23,16 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         find_best_pair_parallel(best_pair, best_diff, cls_graph);
         
         //if(best_pair[0] != nullptr) std::cout << "best pair: (" << best_pair[0]->to_string() << ", " << best_pair[1]->to_string() << ")" << std::endl;
-        std::cout << "f_best: " << best_diff[0] << ", d_best: " << best_diff[1] << std::endl;
+        std::cout << "number of clusters: " << cls_graph.size() << ", score improvement: " << best_diff[0]+best_diff[1] << std::endl;
 
         // if the score is worse then stop
         if(best_diff[0]+best_diff[1] >= 0) break;
         
         // store old values for updated value
         Cluster *cl1 = best_pair[0], *cl2 = best_pair[1];
-        float f_cl1 = f[cl1], f_cl2 = f[cl2];
-        f.erase(cl1);
-        f.erase(cl2);
         
         // join clusters and update the score
         Cluster *cl_joined = cls_graph.join(best_pair[0], best_pair[1]);
-        f[cl_joined] = f_cl1 + f_cl2 + best_diff[0];
-
-        cost_total += best_diff[0] + best_diff[1];
     }
 
     std::unordered_map<Data*, std::string> cluster_map;
@@ -81,8 +67,6 @@ void Greedy_Joining::find_best_pair_parallel(Cluster *best_pair[2], float best_d
     {
         thread.join();
     }
-
-    std::cout << "f_best: " << best_diff[0] << ", d_best: " << best_diff[1] << std::endl;
 }
 
 void Greedy_Joining::find_best_pair(Cluster *best_pair[2], float best_diff[2], std::mutex &best_mutex, Cluster_Graph &cls_graph, int start, int end)
@@ -104,7 +88,7 @@ void Greedy_Joining::find_best_pair(Cluster *best_pair[2], float best_diff[2], s
             //std::cout << "(" << i << ", " << j << ")" << std::endl;
             float cl2_size = cl2->size();
             float f_diff = cl1_size*cl2->get_sum_of_squares() + cl2_size*cl1->get_sum_of_squares() - 2*Util::scalar_product(cl1->get_sum(), cl2->get_sum());
-            float d_diff = d(cl1_size, distance) + d(cl2_size, distance) - d(cl1_size+cl2_size, distance);
+            float d_diff = Util::d_all_pairs(cl1_size, distance) + Util::d_all_pairs(cl2_size, distance) - Util::d_all_pairs(cl1_size+cl2_size, distance);
             
             if(f_diff+d_diff < local_best_diff[0]+local_best_diff[1])
             {

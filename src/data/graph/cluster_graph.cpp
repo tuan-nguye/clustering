@@ -24,12 +24,11 @@ Cluster* Cluster_Graph::join(Cluster *cl1, Cluster *cl2)
         cl2 = temp;
     }
 
-    // update elements and values
-    cl1->join(*cl2);
-
     // update graph by making union of their node children
     NN_Graph::combine_node_to_from(cl1, cl2);
-    delete cl2;
+    
+    // update elements and values
+    cl1->join(*cl2);
 
     return cl1;
 }
@@ -45,7 +44,7 @@ void Cluster_Graph::init_clusters_fine_grained()
 {
     for(Data *d : data)
     {
-        Cluster *cl = new Cluster();
+        Cluster *cl = new Cluster(this->d);
         cl->push_back(d);
         cl->add_to_sum(*d);
         cl->add_to_sum_of_squares(Util::sum_of_squares(*d));

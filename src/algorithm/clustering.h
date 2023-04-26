@@ -10,18 +10,6 @@
 
 class Clustering
 {
-    protected:
-        std::unordered_map<Cluster*, float> f;
-        float d(int cl_size, float d)
-        {
-            float res = (cl_size*(cl_size-1))/2 * d*d;
-            return res;
-        }
-
-        void reset_state()
-        {
-            f.clear();
-        }
     public:
         virtual std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d) = 0;
 };
