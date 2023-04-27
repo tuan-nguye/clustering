@@ -1,4 +1,5 @@
 #include <vector>
+#include <unordered_set>
 #include <thread>
 #include <mutex>
 
@@ -68,11 +69,23 @@ template<typename T> class NN_Graph: protected Graph<T>
         T& combine_node_to_from(T &t1, T &t2)
         {
             Node<T> *n1 = Graph<T>::get_node(t1), *n2 = Graph<T>::get_node(t2);
+            std::unordered_set<Node<T>*> updated_children;
 
             for(Node<T> *next2 : n2->get_children())
             {
-                if(n1 == next2) continue;
-                Graph<T>::add_edge(n1->get_value(), next2->get_value());
+                if(next2 == n1) continue;
+                //Graph<T>::add_edge(n1->get_value(), next2->get_value());
+                updated_children.insert(next2);
+            }
+            
+            for(Node<T> *next1 : n1->get_children())
+            {
+                updated_children.erase(next1);
+            }
+
+            for(Node<T> *next : updated_children)
+            {
+                Graph<T>::add_edge(n1->get_value(), next->get_value());
             }
 
             remove_node(t2);

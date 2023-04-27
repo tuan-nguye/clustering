@@ -28,12 +28,12 @@ template<typename T> class Graph
         void remove_node(T &t)
         {
             Node<T> *node = get_node(t);
-            Maptor<Node<T>*> &children = node->get_children();
+            std::vector<Node<T>*> &children = node->get_children();
 
             auto it = children.begin();
             while(it != children.end())
             {
-                (*it)->get_children().erase(node);
+                (*it)->remove_child(node);
                 it = children.erase(it);
             }
 
@@ -44,20 +44,20 @@ template<typename T> class Graph
         void add_edge(T &t1, T &t2)
         {
             Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
-            n1->get_children().push_back(n2);
-            n2->get_children().push_back(n1);
+            n1->add_child(n2);
+            n2->add_child(n1);
         }
 
         void remove_edge(T &t1, T &t2)
         {
             Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
-            n1->get_children().erase(n2);
-            n2->get_children().erase(n1);
+            n1->remove_child(n2);
+            n2->remove_child(n1);
         }
 
         void get_children(std::vector<T>& vec, T &t)
         {
-            Maptor<Node<T>*>& children = get_node(t)->get_children();
+            std::vector<Node<T>*>& children = get_node(t)->get_children();
             vec.reserve(children.size());
             for(Node<T> *c : children) vec.push_back(c->get_value());
         }

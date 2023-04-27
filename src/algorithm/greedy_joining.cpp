@@ -31,8 +31,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         int num_cls = cls_graph.size();
         find_best_pair_parallel(to_update, cls_graph, score_map, sorted_cache);
         std::tuple<float, Cluster*, Cluster*> top = *sorted_cache.begin();
-        //std::cout << "top of cache: " << std::get<0>(top) << ", " << std::get<1>(top)->to_string() << ", " << std::get<2>(top)->to_string() << std::endl;
-        std::cout << "cache size: " << sorted_cache.size() << ", map size: " << score_map.size() << std::endl;
+        //std::cout << "cache size: " << sorted_cache.size() << ", map size: " << score_map.size() << std::endl;
         std::cout << "number of clusters: " << cls_graph.size() << ", score improvement: " << std::get<0>(top) << std::endl;
 
         /*for(auto &e : score_map)

@@ -73,6 +73,7 @@ int main()
     //parser->parse(data, "./res/test/test_example.data");
     //parser = &ubyte_parser;
     //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
+    //parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     Time timer;
