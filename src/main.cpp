@@ -13,6 +13,51 @@
 #include "data/graph/nearest_neighbour_graph.h"
 #include "util/time/time.h"
 
+void print_digit_with_label(Data *d)
+{
+    for(int i = 0; i < d->size(); i++)
+    {
+        if(i % 28 == 0) std::cout << "\n";
+        if((*d)[i]) std::cout << (*d)[i];
+        else std::cout << "...";
+    }
+
+    std::cout << "\nlabel: " << d->label << std::endl;
+}
+
+void print_some_info_about_distances(std::vector<Data*> &data)
+{
+    int count_same = 0, count_diff = 0;
+    float sum_same = 0, sum_diff = 0;
+    
+    for(int i = 0; i < 100; i++)
+    {
+        Data *d1 = data[i];
+        for(int j = i+1; j < 100; j++)
+        {
+            Data *d2 = data[j];
+            float d = Util::euclidean_distance(*d1, *d2);
+            std::cout << d1->label << " - " << d2->label;
+            std::cout << ": eucl-dist: " << d << std::endl;
+
+            if(d1->label == d2->label)
+            {
+                count_same++;
+                sum_same += d;
+                //print_digit_with_label(d1);
+                //print_digit_with_label(d2);
+            } else
+            {
+                count_diff++;
+                sum_diff += d;
+            }
+        }
+    }
+
+    float avg_same = sum_same/count_same, avg_diff = sum_diff/count_diff;
+    std::cout << "average same labels: " << avg_same << ", average diff labels: " << avg_diff << std::endl;
+}
+
 int num_threads = std::thread::hardware_concurrency();
 
 int main()
@@ -30,23 +75,13 @@ int main()
     //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     std::cout << "number of data objects: " << data.size() << std::endl;
 
-    /*for(int i = 0; i < 9; i++)
-    {
-        Data *d1 = data[i];
-        for(int j = i+1; j < 10; j++)
-        {
-            Data *d2 = data[j];
-            std::cout << d1->label << " - " << d2->label << "\n";
-            std::cout << "eucl-dist: " << Util::euclidean_distance(*d1, *d2) << std::endl;
-        }
-    }*/
     Time timer;
 
     Greedy_Joining gr_joining;
     Clustering *clustering = &gr_joining;
 
     timer.start();
-    float d = 1.2f; // test: 4.0, iris: 1.2, mnist: 1500.0
+    float d = 1.2f; // test: 4.0, iris: 1.2, mnist: 2000.0
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
     std::cout << "runtime in seconds: " << timer.stop() << std::endl;
 
