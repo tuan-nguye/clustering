@@ -33,8 +33,16 @@ class Greedy_Joining: public Clustering
             }
         };
 
-        void find_best_pair_parallel(std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
-        void find_best_pair(std::mutex &best_mutex, std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, int start, int end, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
+        void update_clusters(std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
+        void update_clusters_parallel(std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
+        void update_clusters_parallel_thread(std::mutex &mtx, std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, int start, int end, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
+        void update_clusters_single(Cluster *cl, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
+        
+        void update_cluster_neighbours(Cluster *cl, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
+        void update_cluster_neighbours_parallel(Cluster *cl, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
+        void update_cluster_neighbours_parallel_thread(std::mutex &mtx, Cluster *cl, Cluster_Graph &cls_graph, int start, int end, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
+        void update_clusters_neighbours_single(Cluster *cl, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
+
         void invalidate_cache(std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache, Cluster_Graph &cls_graph, Cluster *cl);
         std::tuple<Cluster*, Cluster*> get_key(Cluster *cl1, Cluster *cl2);
     public:

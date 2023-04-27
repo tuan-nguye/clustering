@@ -29,7 +29,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     while(1)
     {
         int num_cls = cls_graph.size();
-        find_best_pair_parallel(to_update, cls_graph, score_map, sorted_cache);
+        update_clusters(to_update, cls_graph, score_map, sorted_cache);
         std::tuple<float, Cluster*, Cluster*> top = *sorted_cache.begin();
         //std::cout << "cache size: " << sorted_cache.size() << ", map size: " << score_map.size() << std::endl;
         std::cout << "number of clusters: " << cls_graph.size() << ", score improvement: " << std::get<0>(top) << std::endl;
@@ -73,10 +73,26 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     return cluster_map;
 }
 
-void Greedy_Joining::find_best_pair_parallel(std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache)
+void Greedy_Joining::update_clusters(std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache)
+{
+    if(to_update.size() == 1)
+    {
+        update_clusters_single(to_update[0], cls_graph, score_map, cache);
+    } else
+    {
+        update_clusters_parallel(to_update, cls_graph, score_map, cache);
+    }
+}
+
+void Greedy_Joining::update_clusters_single(Cluster *cl, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache)
+{
+    update_cluster_neighbours(cl, cls_graph, score_map, cache);
+}
+
+void Greedy_Joining::update_clusters_parallel(std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache)
 {
     int size = to_update.size();
-    std::mutex best_mutex;
+    std::mutex mtx;
     std::vector<std::thread> threads;
 
     for(int i = 0; i < num_threads; i++)
@@ -84,7 +100,7 @@ void Greedy_Joining::find_best_pair_parallel(std::vector<Cluster*> &to_update, C
         int start = i*size/num_threads;
         int end = (i+1)*size/num_threads;
         if(start == end) continue;
-        threads.emplace_back(&Greedy_Joining::find_best_pair, this, std::ref(best_mutex), std::ref(to_update), std::ref(cls_graph), start, end, std::ref(score_map), std::ref(cache));
+        threads.emplace_back(&Greedy_Joining::update_clusters_parallel_thread, this, std::ref(mtx), std::ref(to_update), std::ref(cls_graph), start, end, std::ref(score_map), std::ref(cache));
     }
 
     for(std::thread &thread : threads)
@@ -93,7 +109,7 @@ void Greedy_Joining::find_best_pair_parallel(std::vector<Cluster*> &to_update, C
     }
 }
 
-void Greedy_Joining::find_best_pair(std::mutex &mtx, std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, int start, int end, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache)
+void Greedy_Joining::update_clusters_parallel_thread(std::mutex &mtx, std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, int start, int end, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache)
 {
     for(int i = start; i < end; i++)
     {
@@ -103,6 +119,7 @@ void Greedy_Joining::find_best_pair(std::mutex &mtx, std::vector<Cluster*> &to_u
         //std::cout << cl1->to_string() << ", children: ";
         std::vector<Cluster*> children;
         cls_graph.get_neighbours(children, cl1);
+        //std::cout << "num of children: " << children.size() << std::endl;
         for(Cluster *cl2 : children)
         {
             //std::cout << cl2->to_string() << ", ";
@@ -127,6 +144,96 @@ void Greedy_Joining::find_best_pair(std::mutex &mtx, std::vector<Cluster*> &to_u
     }
 }
 
+void Greedy_Joining::update_cluster_neighbours(Cluster *cl, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache)
+{
+    if(cl->size() == 1)
+    {
+        update_clusters_single(cl, cls_graph, score_map, cache);
+    } else
+    {
+        update_cluster_neighbours_parallel(cl, cls_graph, score_map, cache);
+    }
+}
+
+void Greedy_Joining::update_cluster_neighbours_parallel(Cluster *cl, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache)
+{
+    int size = cl->size();
+    std::mutex mtx;
+    std::vector<std::thread> threads;
+
+    for(int i = 0; i < num_threads; i++)
+    {
+        int start = i*size/num_threads;
+        int end = (i+1)*size/num_threads;
+        if(start == end) continue;
+        threads.emplace_back(&Greedy_Joining::update_cluster_neighbours_parallel_thread, this, std::ref(mtx), cl, std::ref(cls_graph), start, end, std::ref(score_map), std::ref(cache));
+    }
+
+    for(std::thread &thread : threads)
+    {
+        thread.join();
+    }
+}
+
+
+void Greedy_Joining::update_cluster_neighbours_parallel_thread(std::mutex &mtx, Cluster *cl, Cluster_Graph &cls_graph, int start, int end, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache)
+{
+    //std::cout << "cluster_neighbours_parallel_thread (" << start << ", " << end << ")" << std::endl;
+    float cl_size = cl->size();
+    //std::cout << i++ << std::endl;
+    //std::cout << cl1->to_string() << ", children: ";
+    std::vector<Cluster*> children;
+    cls_graph.get_neighbours(children, cl);
+    //std::cout << "num of children: " << children.size() << std::endl;
+    for(int i = start; i < end; i++)
+    {
+        Cluster *cl2 = children[i];
+        //std::cout << cl2->to_string() << ", ";
+        //std::cout << "(" << i << ", " << j << ")" << std::endl;
+        std::tuple<Cluster*, Cluster*> key = get_key(cl, cl2);
+        mtx.lock();
+        bool seen = score_map.find(key) != score_map.end();
+        mtx.unlock();
+        if(seen) continue;
+
+        float cl2_size = cl2->size();
+        float f_diff = cl_size*cl2->get_sum_of_squares() + cl2_size*cl->get_sum_of_squares() - 2*Util::scalar_product(cl->get_sum(), cl2->get_sum());
+        float d_diff = Util::d_all_pairs(cl_size, distance) + Util::d_all_pairs(cl2_size, distance) - Util::d_all_pairs(cl_size+cl2_size, distance);
+        cmp_count++;
+
+        mtx.lock();
+        score_map[key] = f_diff+d_diff;
+        cache.insert(std::make_tuple(f_diff+d_diff, std::get<0>(key), std::get<1>(key)));
+        mtx.unlock();
+    }
+}
+
+
+void Greedy_Joining::update_clusters_neighbours_single(Cluster *cl, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache)
+{
+    float cl_size = cl->size();
+    //std::cout << i++ << std::endl;
+    //std::cout << cl1->to_string() << ", children: ";
+    std::vector<Cluster*> children;
+    cls_graph.get_neighbours(children, cl);
+    //std::cout << "num of children: " << children.size() << std::endl;
+    for(Cluster *cl2 : children)
+    {
+        //std::cout << cl2->to_string() << ", ";
+        //std::cout << "(" << i << ", " << j << ")" << std::endl;
+        std::tuple<Cluster*, Cluster*> key = get_key(cl, cl2);
+        bool seen = score_map.find(key) != score_map.end();
+        if(seen) continue;
+
+        float cl2_size = cl2->size();
+        float f_diff = cl_size*cl2->get_sum_of_squares() + cl2_size*cl->get_sum_of_squares() - 2*Util::scalar_product(cl->get_sum(), cl2->get_sum());
+        float d_diff = Util::d_all_pairs(cl_size, distance) + Util::d_all_pairs(cl2_size, distance) - Util::d_all_pairs(cl_size+cl2_size, distance);
+        cmp_count++;
+
+        score_map[key] = f_diff+d_diff;
+        cache.insert(std::make_tuple(f_diff+d_diff, std::get<0>(key), std::get<1>(key)));
+    }
+}
 
 void Greedy_Joining::invalidate_cache(std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache, Cluster_Graph &cls_graph, Cluster *cl)
 {
