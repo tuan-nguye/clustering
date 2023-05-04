@@ -24,7 +24,7 @@ class Adjusted_Rand_Index: public Evaluation
             int num_label_orig = labels_orig.size(), num_label_clus = labels_clus.size();
 
             std::unordered_map<std::string, std::unordered_map<std::string, int>> contingency_table;
-            std::unordered_map<std::string, int> count_orig, count_clus;
+            std::unordered_map<std::string, long> count_orig, count_clus;
             
             for(auto &entry : entries)
             {

@@ -1,4 +1,6 @@
 #include <vector>
+#include <iostream>
+
 #include "eval/evaluation.h"
 
 #ifndef __rand_index_include__
@@ -15,8 +17,8 @@ class Rand_Index: public Evaluation
         double execute(std::unordered_map<Data*, std::string> map)
         {
             std::vector<std::pair<Data*, std::string>> entries = get_entry_vector(map);
-            int n = entries.size();
-            int correct = 0;
+            long long n = entries.size();
+            long long correct = 0;
 
             for(int i = 0; i < n-1; i++)
             {
@@ -29,7 +31,7 @@ class Rand_Index: public Evaluation
                 }
             }
 
-            return double(correct) / ((n*(n-1))/2);
+            return double(correct) / ((n*(n-1))/2l);
         }
 };
 
