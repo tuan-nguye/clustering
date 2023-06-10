@@ -34,7 +34,11 @@ void Cluster_Vector::init_clusters_fine_grained()
 // access functions
 void Cluster_Vector::get_neighbours(std::vector<Cluster*>& vec, Cluster *cl)
 {
-
+    for(Cluster* nb : clusters)
+    {
+        if(nb == cl) continue;
+        vec.push_back(nb);
+    }
 }
 
 bool Cluster_Vector::find(Cluster *&cl)
