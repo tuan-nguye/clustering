@@ -24,7 +24,7 @@ template<typename T> class Graph
             return node;
         }
     public:
-        void add_node(T &t)
+        virtual void add_node(T &t)
         {
             Node<T> *node = create_node(t);
             node_map[t] = node;

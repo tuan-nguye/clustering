@@ -9,7 +9,7 @@
 #ifndef __distance_graph_include__
 #define __distance_graph_include__
 
-template<typename T> class Distance_Graph: protected Auto_Edge_Graph<T>
+template<typename T> class Distance_Graph: public Auto_Edge_Graph<T>
 {
     private:
         float (*cmp)(T&, T&);
@@ -36,9 +36,9 @@ template<typename T> class Distance_Graph: protected Auto_Edge_Graph<T>
         void combine_nodes_into(T &c, T &t1, T &t2)
         {
             Graph<T>::add_node(c);
-            Node<T> *n1 = Graph<T>::get_node(t1), *n2 = Graph<T>::get_node(t2);
+            Node<T> *n1 = this->get_node(t1), *n2 = this->get_node(t2);
             std::unordered_set<Node<T>*> updated_children;
-            Graph<T>::remove_edge(t1, t2);
+            this->remove_edge(t1, t2);
 
             for(Node<T> *next1 : n1->get_children())
             {
@@ -52,11 +52,11 @@ template<typename T> class Distance_Graph: protected Auto_Edge_Graph<T>
 
             for(Node<T> *next : updated_children)
             {
-                Graph<T>::add_edge(c, next->get_value());
+                this->add_edge(c, next->get_value());
             }
 
-            Graph<T>::remove_node(t1);
-            Graph<T>::remove_node(t2);
+            this->remove_node(t1);
+            this->remove_node(t2);
         }
 };
 

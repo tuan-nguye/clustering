@@ -2,21 +2,17 @@
 #include <unordered_map>
 
 #include "data/cluster.h"
+#include "data/cluster_container.h"
 #include "data/graph/distance_graph.h"
 
 #ifndef __cluster_graph_include__
 #define __cluster_graph_include__
 
-class Cluster_Graph: public Distance_Graph<Cluster*>
-{
-    private:
-        float d;
-        std::vector<Data*> data;
-        
+class Cluster_Graph: public Cluster_Container, private Distance_Graph<Cluster*>
+{  
     public:
         Cluster_Graph(float d);
-        void add_data(Data *d);
-        int size();
+        int size() { return Distance_Graph<Cluster*>::size(); }
 
         // modifiers
         Cluster* join(Cluster *cl1, Cluster *cl2);

@@ -3,17 +3,7 @@
 #include "data/graph/cluster_graph.h"
 #include "util/util.h"
 
-Cluster_Graph::Cluster_Graph(float d): Distance_Graph<Cluster*>(d, compare), d(d) {}
-
-void Cluster_Graph::add_data(Data *d)
-{
-    data.push_back(d);
-}
-
-int Cluster_Graph::size()
-{
-    return Distance_Graph::size();
-}
+Cluster_Graph::Cluster_Graph(float d): Cluster_Container(d), Distance_Graph<Cluster*>(d, compare) {}
 
 /*
 create new cluster which is the union of cl1 and cl2 and
@@ -43,9 +33,11 @@ bool Cluster_Graph::find(Cluster *&cl)
 
 void Cluster_Graph::init_clusters_fine_grained()
 {
-    for(Data *d : data)
+    float dist = get_d();
+
+    for(Data *d : get_data())
     {
-        Cluster *cl = new Cluster(this->d);
+        Cluster *cl = new Cluster(dist);
         cl->push_back(d);
         cl->add_to_sum(*d);
         cl->add_to_sum_of_squares(Util::sum_of_squares(*d));
