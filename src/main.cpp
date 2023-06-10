@@ -10,7 +10,7 @@
 #include "eval/adjusted_rand_index.h"
 #include "eval/silhouette_score.h"
 #include "data/structures/maptor.h"
-#include "data/graph/nearest_neighbour_graph.h"
+#include "data/graph/distance_graph.h"
 #include "util/time/time.h"
 
 void print_digit_with_label(Data *d)
@@ -68,11 +68,11 @@ int main()
     CSV_Parser csv_parser;
     Ubyte_Parser ubyte_parser;
 
-    //parser = &csv_parser;
+    parser = &csv_parser;
     //parser->parse(data, "./res/test/test_example.data");
-    //parser->parse(data, "./res/iris/iris_data.data");
-    parser = &ubyte_parser;
-    parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
+    parser->parse(data, "./res/iris/iris_data.data");
+    //parser = &ubyte_parser;
+    //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     //parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
     std::cout << "number of data objects: " << data.size() << std::endl;
 
@@ -82,7 +82,7 @@ int main()
     Clustering *clustering = &gr_joining;
 
     timer.start();
-    float d = 2000.0f; // test: 4.0, iris: 1.2, mnist: 2000.0
+    float d = 1.2f; // test: 4.0, iris: 1.2, mnist: 2000.0
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
     std::cout << "runtime in seconds: " << timer.stop() << std::endl;
 

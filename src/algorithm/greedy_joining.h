@@ -16,6 +16,9 @@ typedef std::priority_queue<Edge, std::vector<Edge>, std::greater<Edge>> MinPrio
 class Greedy_Joining: public Clustering
 {
     private:
+        // configuration
+        
+
         float distance;
         int cmp_count;
 
@@ -45,6 +48,7 @@ class Greedy_Joining: public Clustering
         Edge get_next_pair(MinPriorityQueue &pq, std::unordered_set<Cluster*> invalid);
         std::tuple<Cluster*, Cluster*> get_key(Cluster *cl1, Cluster *cl2);
     public:
+        Greedy_Joining() {};
         std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d);
 };
 

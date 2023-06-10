@@ -19,7 +19,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     Cluster_Graph cls_graph(dist);
     for(Data *d : input) cls_graph.add_data(d);
     cls_graph.init_clusters_fine_grained();
-    std::cout << "time to build NN_Graph: " << timer.stop() << std::endl;
+    std::cout << "time to build Distance_Graph: " << timer.stop() << std::endl;
     std::unordered_set<uintptr_t> addresses;
     for(Cluster *cl : cls_graph) addresses.insert(reinterpret_cast<uintptr_t>(cl));
     

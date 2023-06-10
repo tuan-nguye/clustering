@@ -2,12 +2,12 @@
 #include <unordered_map>
 
 #include "data/cluster.h"
-#include "data/graph/nearest_neighbour_graph.h"
+#include "data/graph/distance_graph.h"
 
 #ifndef __cluster_graph_include__
 #define __cluster_graph_include__
 
-class Cluster_Graph: public NN_Graph<Cluster*>
+class Cluster_Graph: public Distance_Graph<Cluster*>
 {
     private:
         float d;

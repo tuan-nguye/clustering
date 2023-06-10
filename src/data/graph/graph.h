@@ -17,10 +17,16 @@ template<typename T> class Graph
         {
             return node_map[t];
         }
+
+        virtual Node<T>* create_node(T &t)
+        {
+            Node<T> *node = new Node<T>(t);
+            return node;
+        }
     public:
         void add_node(T &t)
         {
-            Node<T> *node = new Node<T>(t);
+            Node<T> *node = create_node(t);
             node_map[t] = node;
             elements.push_back(t);
         }
