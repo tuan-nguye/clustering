@@ -71,6 +71,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         label++;
     }
 
+    //free_clusters();
     return cluster_map;
 }
 

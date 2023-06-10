@@ -12,7 +12,7 @@ delete old clusters from heap
 */
 Cluster* Cluster_Graph::join(Cluster *cl1, Cluster *cl2)
 {
-    Cluster *combined = &Cluster::join(*cl1, *cl2);
+    Cluster *combined = &Cluster::join(cl1, cl2);
     Distance_Graph::combine_nodes_into(combined, cl1, cl2);
     cl1->clear();//delete cl1;
     cl2->clear();//delete cl2;

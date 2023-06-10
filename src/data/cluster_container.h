@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "data/data.h"
+#include "data/cluster.h"
 
 #ifndef __cluster_container_include__
 #define __cluster_container_include__
