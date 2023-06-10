@@ -37,8 +37,14 @@ template<typename T> class Graph
                 it = children.erase(it);
             }
 
-            delete node;
             elements.erase(t);
+            node_map.erase(t);
+            delete node;
+        }
+
+        bool find(T &t)
+        {
+            return elements.find(t);
         }
 
         void add_edge(T &t1, T &t2)

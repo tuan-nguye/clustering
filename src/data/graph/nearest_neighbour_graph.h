@@ -66,30 +66,43 @@ template<typename T> class NN_Graph: protected Graph<T>
             Graph<T>::remove_node(t);
         }
 
-        T& combine_node_to_from(T &t1, T &t2)
+        bool find(T &t)
         {
+            return Graph<T>::find(t);
+        }
+
+        /*
+        create new node from two other nodes
+        children of new node is union of the children
+        of the two others
+
+        also remove reference to node by removing edge
+        before removing the node, otherwise segfault
+        */
+        void combine_nodes_into(T &c, T &t1, T &t2)
+        {
+            Graph<T>::add_node(c);
             Node<T> *n1 = Graph<T>::get_node(t1), *n2 = Graph<T>::get_node(t2);
             std::unordered_set<Node<T>*> updated_children;
+            Graph<T>::remove_edge(t1, t2);
+
+            for(Node<T> *next1 : n1->get_children())
+            {
+                updated_children.insert(next1);
+            }
 
             for(Node<T> *next2 : n2->get_children())
             {
-                if(next2 == n1) continue;
-                //Graph<T>::add_edge(n1->get_value(), next2->get_value());
                 updated_children.insert(next2);
-            }
-            
-            for(Node<T> *next1 : n1->get_children())
-            {
-                updated_children.erase(next1);
             }
 
             for(Node<T> *next : updated_children)
             {
-                Graph<T>::add_edge(n1->get_value(), next->get_value());
+                Graph<T>::add_edge(c, next->get_value());
             }
 
+            remove_node(t1);
             remove_node(t2);
-            return t1;
         }
 
         void get_children(std::vector<T> &vec, T &t)

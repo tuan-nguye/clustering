@@ -15,29 +15,30 @@ int Cluster_Graph::size()
     return NN_Graph::size();
 }
 
+/*
+create new cluster which is the union of cl1 and cl2 and
+update graph by making union of their node children
+delete old clusters from heap
+*/
 Cluster* Cluster_Graph::join(Cluster *cl1, Cluster *cl2)
 {
-    if(cl1->size() < cl2->size())
-    {
-        Cluster *temp = cl1;
-        cl1 = cl2;
-        cl2 = temp;
-    }
-
-    // update graph by making union of their node children
-    NN_Graph::combine_node_to_from(cl1, cl2);
-    
-    // update elements and values
-    cl1->join(*cl2);
-
-    return cl1;
+    Cluster *combined = &Cluster::join(*cl1, *cl2);
+    NN_Graph::combine_nodes_into(combined, cl1, cl2);
+    cl1->clear();//delete cl1;
+    cl2->clear();//delete cl2;
+    return combined;
 }
 
-
+// access
 
 void Cluster_Graph::get_neighbours(std::vector<Cluster*>& vec, Cluster *cl)
 {
     NN_Graph::get_children(vec, cl);
+}
+
+bool Cluster_Graph::find(Cluster *&cl)
+{
+    return NN_Graph::find(cl);
 }
 
 void Cluster_Graph::init_clusters_fine_grained()

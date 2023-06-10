@@ -28,6 +28,7 @@ class Cluster_Graph: public NN_Graph<Cluster*>
         
         // access functions
         void get_neighbours(std::vector<Cluster*>& vec, Cluster *cl);
+        bool find(Cluster *&cl);
         Cluster** begin();
         Cluster** end();
         Cluster*& operator[](int idx);

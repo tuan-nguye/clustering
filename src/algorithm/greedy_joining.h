@@ -2,12 +2,16 @@
 #include <unordered_map>
 #include <set>
 #include <tuple>
+#include <queue>
 
 #include "algorithm/clustering.h"
 #include "data/graph/cluster_graph.h"
 
 #ifndef __greedy_joining_include__
 #define __greedy_joining_include__
+
+typedef std::tuple<float, Cluster*, Cluster*> Edge;
+typedef std::priority_queue<Edge, std::vector<Edge>, std::greater<Edge>> MinPriorityQueue;
 
 class Greedy_Joining: public Clustering
 {
@@ -33,12 +37,12 @@ class Greedy_Joining: public Clustering
             }
         };
 
-        void update_clusters(std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
-        void update_clusters_parallel(std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
-        void update_clusters_parallel_thread(std::mutex &mtx, std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, int start, int end, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
-        void update_clusters_single(Cluster *cl, Cluster_Graph &cls_graph, std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache);
+        void update_clusters(std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, MinPriorityQueue &pq);
+        void update_clusters_parallel(std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, MinPriorityQueue &pq);
+        void update_clusters_parallel_thread(std::mutex &mtx, std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, int start, int end, MinPriorityQueue &pq);
+        void update_clusters_single(Cluster *cl, Cluster_Graph &cls_graph, MinPriorityQueue &pq);
 
-        void invalidate_cache(std::unordered_map<std::tuple<Cluster*, Cluster*>, float, Tuple_Hash> &score_map, std::set<std::tuple<float, Cluster*, Cluster*>> &cache, Cluster_Graph &cls_graph, Cluster *cl);
+        Edge get_next_pair(MinPriorityQueue &pq, std::unordered_set<Cluster*> invalid);
         std::tuple<Cluster*, Cluster*> get_key(Cluster *cl1, Cluster *cl2);
     public:
         std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d);

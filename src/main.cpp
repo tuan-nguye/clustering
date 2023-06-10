@@ -69,8 +69,8 @@ int main()
     Ubyte_Parser ubyte_parser;
 
     parser = &csv_parser;
-    parser->parse(data, "./res/iris/iris_data.data");
     //parser->parse(data, "./res/test/test_example.data");
+    parser->parse(data, "./res/iris/iris_data.data");
     //parser = &ubyte_parser;
     //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     //parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
