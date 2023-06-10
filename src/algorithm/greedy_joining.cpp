@@ -78,7 +78,7 @@ void Greedy_Joining::update_clusters(std::vector<Cluster*> &to_update, Cluster_G
 {
     if(to_update.size() == 1)
     {
-        update_clusters_single(to_update[0], cls_graph, pq);
+        update_clusters_single(nullptr, to_update[0], cls_graph, pq);
     } else
     {
         update_clusters_parallel(to_update, cls_graph, pq);
@@ -96,7 +96,7 @@ void Greedy_Joining::update_clusters_parallel(std::vector<Cluster*> &to_update, 
         int start = i*size/num_threads;
         int end = (i+1)*size/num_threads;
         if(start == end) continue;
-        threads.emplace_back(&Greedy_Joining::update_clusters_parallel_thread, this, std::ref(mtx), std::ref(to_update), std::ref(cls_graph), start, end, std::ref(pq));
+        threads.emplace_back(&Greedy_Joining::update_clusters_parallel_thread, this, &mtx, std::ref(to_update), std::ref(cls_graph), start, end, std::ref(pq));
     }
 
     for(std::thread &thread : threads)
@@ -105,38 +105,16 @@ void Greedy_Joining::update_clusters_parallel(std::vector<Cluster*> &to_update, 
     }
 }
 
-void Greedy_Joining::update_clusters_parallel_thread(std::mutex &mtx, std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, int start, int end, MinPriorityQueue &pq)
+void Greedy_Joining::update_clusters_parallel_thread(std::mutex *mtx, std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, int start, int end, MinPriorityQueue &pq)
 {
     for(int i = start; i < end; i++)
     {
         Cluster *cl1 = to_update[i];
-        float cl1_size = cl1->size();
-        //std::cout << i++ << std::endl;
-        std::vector<Cluster*> children;
-        cls_graph.get_neighbours(children, cl1);
-        //std::string out = "num of children: " + std::to_string(children.size()) + "\n";
-        //out += cl1->to_string() + ", children: ";
-        for(Cluster *cl2 : children)
-        {
-            //out += cl2->to_string() + ", ";
-
-            float cl2_size = cl2->size();
-            float f_diff = cl1_size*cl2->get_sum_of_squares() + cl2_size*cl1->get_sum_of_squares() - 2*Util::scalar_product(cl1->get_sum(), cl2->get_sum());
-            float d_diff = Util::d_all_pairs(cl1_size, distance) + Util::d_all_pairs(cl2_size, distance) - Util::d_all_pairs(cl1_size+cl2_size, distance);
-            cmp_count++;
-
-            if(f_diff+d_diff < 0)
-            {
-                mtx.lock();
-                pq.emplace(f_diff+d_diff, cl1, cl2);
-                mtx.unlock();
-            }
-        }
-        //std::cout << out << std::endl;
+        update_clusters_single(mtx, cl1, cls_graph, pq);
     }
 }
 
-void Greedy_Joining::update_clusters_single(Cluster *cl1, Cluster_Graph &cls_graph, MinPriorityQueue &pq)
+void Greedy_Joining::update_clusters_single(std::mutex *mtx, Cluster *cl1, Cluster_Graph &cls_graph, MinPriorityQueue &pq)
 {
     float cl1_size = cl1->size();
     //std::cout << i++ << std::endl;
@@ -154,7 +132,17 @@ void Greedy_Joining::update_clusters_single(Cluster *cl1, Cluster_Graph &cls_gra
         float d_diff = Util::d_all_pairs(cl1_size, distance) + Util::d_all_pairs(cl2_size, distance) - Util::d_all_pairs(cl1_size+cl2_size, distance);
         cmp_count++;
 
-        if(f_diff+d_diff < 0) pq.emplace(f_diff+d_diff, cl1, cl2);
+        if(f_diff+d_diff < 0)
+        {
+           if(mtx != nullptr)
+           {
+                std::lock_guard<std::mutex> lock(*mtx);
+                pq.emplace(f_diff+d_diff, cl1, cl2);
+           } else
+           {
+                pq.emplace(f_diff+d_diff, cl1, cl2);
+           }
+        }
     }
     //std::cout << std::endl;
 }

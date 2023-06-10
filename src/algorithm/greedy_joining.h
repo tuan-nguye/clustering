@@ -6,6 +6,7 @@
 
 #include "algorithm/clustering.h"
 #include "data/graph/cluster_graph.h"
+#include "data/graph/auto_edge_graph.h"
 
 #ifndef __greedy_joining_include__
 #define __greedy_joining_include__
@@ -16,9 +17,20 @@ typedef std::priority_queue<Edge, std::vector<Edge>, std::greater<Edge>> MinPrio
 class Greedy_Joining: public Clustering
 {
     private:
-        // configuration
+        // optimization configuration
         
+        // enables cache, tradeoff space <-> time
+        bool cache = false;
 
+        // use of graph instead of iterating through
+        // all pairs of clusters
+        bool graph = false;
+        Auto_Edge_Graph<Cluster*> *opt_graph;
+
+        // use parallelization if possible
+        bool parallel = false;
+
+        // other variables
         float distance;
         int cmp_count;
 
@@ -42,14 +54,18 @@ class Greedy_Joining: public Clustering
 
         void update_clusters(std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, MinPriorityQueue &pq);
         void update_clusters_parallel(std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, MinPriorityQueue &pq);
-        void update_clusters_parallel_thread(std::mutex &mtx, std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, int start, int end, MinPriorityQueue &pq);
-        void update_clusters_single(Cluster *cl, Cluster_Graph &cls_graph, MinPriorityQueue &pq);
+        void update_clusters_parallel_thread(std::mutex *mtx, std::vector<Cluster*> &to_update, Cluster_Graph &cls_graph, int start, int end, MinPriorityQueue &pq);
+        void update_clusters_single(std::mutex *mtx, Cluster *cl, Cluster_Graph &cls_graph, MinPriorityQueue &pq);
 
         Edge get_next_pair(MinPriorityQueue &pq, std::unordered_set<Cluster*> invalid);
         std::tuple<Cluster*, Cluster*> get_key(Cluster *cl1, Cluster *cl2);
     public:
         Greedy_Joining() {};
         std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d);
+
+        void set_cache(bool value) { cache = value; }
+        void set_graph(bool value) { graph = value; }
+        void set_parallel(bool value) { parallel = value; }
 };
 
 #endif
