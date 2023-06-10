@@ -125,9 +125,12 @@ void Greedy_Joining::update_clusters_parallel_thread(std::mutex &mtx, std::vecto
             float d_diff = Util::d_all_pairs(cl1_size, distance) + Util::d_all_pairs(cl2_size, distance) - Util::d_all_pairs(cl1_size+cl2_size, distance);
             cmp_count++;
 
-            mtx.lock();
-            pq.emplace(f_diff+d_diff, cl1, cl2);
-            mtx.unlock();
+            if(f_diff+d_diff < 0)
+            {
+                mtx.lock();
+                pq.emplace(f_diff+d_diff, cl1, cl2);
+                mtx.unlock();
+            }
         }
         //std::cout << out << std::endl;
     }
@@ -151,7 +154,7 @@ void Greedy_Joining::update_clusters_single(Cluster *cl1, Cluster_Graph &cls_gra
         float d_diff = Util::d_all_pairs(cl1_size, distance) + Util::d_all_pairs(cl2_size, distance) - Util::d_all_pairs(cl1_size+cl2_size, distance);
         cmp_count++;
 
-        pq.emplace(f_diff+d_diff, cl1, cl2);
+        if(f_diff+d_diff < 0) pq.emplace(f_diff+d_diff, cl1, cl2);
     }
     //std::cout << std::endl;
 }
