@@ -11,6 +11,7 @@ int Cluster_Vector::size()
 Cluster* Cluster_Vector::join(Cluster *cl1, Cluster *cl2)
 {
     Cluster* joined = Util_Cluster::join(cl1, cl2);
+    clusters.push_back(joined);
     cl1->clear();
     cl2->clear();
     clusters.erase(cl1);

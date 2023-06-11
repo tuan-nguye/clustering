@@ -6,7 +6,8 @@
 
 #include "algorithm/clustering.h"
 #include "data/cluster_container.h"
-#include "data/graph/auto_edge_graph.h"
+#include "data/cluster_vector.h"
+#include "data/graph/cluster_graph.h"
 
 #ifndef __greedy_joining_include__
 #define __greedy_joining_include__
@@ -16,16 +17,24 @@ typedef std::priority_queue<Edge, std::vector<Edge>, std::greater<Edge>> MinPrio
 
 class Greedy_Joining: public Clustering
 {
+    public:
+        enum container_type { VECTOR = 0, DISTANCE = 1, KNN = 2 };
     private:
         // optimization configuration
         
         // enables cache, tradeoff space <-> time
         bool cache_enabled = false;
 
-        // use of graph instead of iterating through
-        // all pairs of clusters
-        bool graph_enabled = false;
-        Auto_Edge_Graph<Cluster*> *graph;
+        // selects container type, default is vector
+        // graphs are the performance options
+        container_type container = container_type::VECTOR;
+        /* should actually be a map that stores type as key and
+        the class as value to invoke the class's constructor inside
+        the execution function but no idead how it works
+        std::unordered_map<container_type, Cluster_Container> container_type_map =
+        {
+            { container_type::VECTOR, Cluster_Vector()},
+        };*/
 
         // use parallelization if possible
         bool parallel_enabled = false;
@@ -59,30 +68,31 @@ class Greedy_Joining: public Clustering
             std::vector<Cluster*> to_update;
         };
 
+
         // functions updating cache with new values
-        void update_cache(Cache &cache, Cluster_Container &cls_container);
-        void update_cache_single(Cache &cache, Cluster_Container &cls_container);
-        void update_cache_parallel(Cache &cache, Cluster_Container &cls_container);
-        void update_cache_parallel_thread(Cache &cache, Cluster_Container &cls_container, std::mutex *mtx, int start, int end);
-        void update_cache_operation(Cache &cache, Cluster_Container &cls_container, std::mutex *mtx, Cluster *cl1);
+        void update_cache(Cache &cache, Cluster_Container *cls_container);
+        void update_cache_single(Cache &cache, Cluster_Container *cls_container);
+        void update_cache_parallel(Cache &cache, Cluster_Container *cls_container);
+        void update_cache_parallel_thread(Cache &cache, Cluster_Container *cls_container, std::mutex *mtx, int start, int end);
+        void update_cache_operation(Cache &cache, Cluster_Container *cls_container, std::mutex *mtx, Cluster *cl1);
 
         // functions for iterating through all pairs
-        void best_pair_iterate(Edge &best, Cluster_Container &cls_container);
-        void best_pair_iterate_single(Edge &best, Cluster_Container &cls_container);
-        void best_pair_iterate_parallel(Edge &best, Cluster_Container &cls_container);
-        void best_pair_iterate_parallel_thread(Edge &best, Cluster_Container &cls_container, std::mutex *mtx, int start, int end);
-        void best_pair_iterate_operation(Edge &best, Cluster_Container &cls_container, std::mutex *mtx, Cluster *cl1);
+        void best_pair_iterate(Edge &best, Cluster_Container *cls_container);
+        void best_pair_iterate_single(Edge &best, Cluster_Container *cls_container);
+        void best_pair_iterate_parallel(Edge &best, Cluster_Container *cls_container);
+        void best_pair_iterate_parallel_thread(Edge &best, Cluster_Container *cls_container, std::mutex *mtx, int start, int end);
+        void best_pair_iterate_operation(Edge &best, Cluster_Container *cls_container, std::mutex *mtx, Cluster *cl1);
 
         // get next valid pair of clusters to join
         Edge get_next_pair_pq(Cache &cache);
-        Edge get_next_pair_iterate(Cluster_Container &cls_container);
-        void join_clusters(Edge &e, Cache &cache, Cluster_Container &cls_container);
+        Edge get_next_pair_iterate(Cluster_Container *cls_container);
+        void join_clusters(Edge &e, Cache &cache, Cluster_Container *cls_container);
     public:
         Greedy_Joining() {};
         std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d);
 
         void set_cache(bool value) { cache_enabled = value; }
-        void set_graph(Auto_Edge_Graph<Cluster*> *ae_graph) { graph = ae_graph; graph_enabled = true; }
+        void set_container(container_type type) { container = type; }
         void set_parallel(bool value) { parallel_enabled = value; }
 };
 

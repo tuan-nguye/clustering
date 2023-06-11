@@ -9,7 +9,7 @@
 #define __cluster_graph_include__
 
 class Cluster_Graph: public Cluster_Container, private Distance_Graph<Cluster*>
-{  
+{
     public:
         Cluster_Graph(float d);
         int size() { return Distance_Graph<Cluster*>::size(); }

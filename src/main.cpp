@@ -79,8 +79,9 @@ int main()
     Time timer;
 
     Greedy_Joining gr_joining;
-    gr_joining.set_cache(false);
-    gr_joining.set_parallel(false);
+    gr_joining.set_cache(true);
+    gr_joining.set_container(Greedy_Joining::container_type::DISTANCE);
+    gr_joining.set_parallel(true);
     Clustering *clustering = &gr_joining;
 
     timer.start();
