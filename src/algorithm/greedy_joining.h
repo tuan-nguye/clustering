@@ -52,11 +52,18 @@ class Greedy_Joining: public Clustering
             }
         };
 
+        struct Cache
+        {
+            MinPriorityQueue pq;
+            std::unordered_set<Cluster*> invalid;
+            std::vector<Cluster*> to_update;
+        };
+
         // functions updating cache with new values
-        void update_cache(std::vector<Cluster*> &to_update, Cluster_Container &cls_container, MinPriorityQueue &pq);
-        void update_cache_parallel(std::vector<Cluster*> &to_update, Cluster_Container &cls_container, MinPriorityQueue &pq);
-        void update_cache_parallel_thread(std::vector<Cluster*> &to_update, Cluster_Container &cls_container, MinPriorityQueue &pq, std::mutex *mtx, int start, int end);
-        void update_cache_single(Cluster *cl1, Cluster_Container &cls_container, MinPriorityQueue &pq, std::mutex *mtx);
+        void update_cache(Cache &cache, Cluster_Container &cls_container);
+        void update_cache_parallel(Cache &cache, Cluster_Container &cls_container);
+        void update_cache_parallel_thread(Cache &cache, Cluster_Container &cls_container, std::mutex *mtx, int start, int end);
+        void update_cache_single(Cache &cache, Cluster *cl1, Cluster_Container &cls_container, std::mutex *mtx);
 
         // functions for iterating through all pairs
         void best_pair_iterate_parallel(Edge &e, Cluster_Container &cls_container);
@@ -64,7 +71,7 @@ class Greedy_Joining: public Clustering
         void best_pair_iterate_single(Edge &e, Cluster_Container &cls_container, std::mutex *mtx, Cluster *cl1);
 
         // get next valid pair of clusters to join
-        Edge get_next_pair_pq(MinPriorityQueue &pq, std::unordered_set<Cluster*> invalid);
+        Edge get_next_pair_pq(Cache &cache);
         Edge get_next_pair_iterate(Edge &e, Cluster_Container &cls_container);
     public:
         Greedy_Joining() {};
