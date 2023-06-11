@@ -1,4 +1,6 @@
 #include "data/cluster_vector.h"
+#include "util/util.h"
+#include "util/util_cluster.h"
 
 int Cluster_Vector::size()
 {
@@ -8,7 +10,7 @@ int Cluster_Vector::size()
 // modifiers
 Cluster* Cluster_Vector::join(Cluster *cl1, Cluster *cl2)
 {
-    Cluster* joined = &Cluster::join(cl1, cl2);
+    Cluster* joined = Util_Cluster::join(cl1, cl2);
     cl1->clear();
     cl2->clear();
     clusters.erase(cl1);

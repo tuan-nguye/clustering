@@ -2,6 +2,7 @@
 
 #include "data/graph/cluster_graph.h"
 #include "util/util.h"
+#include "util/util_cluster.h"
 
 Cluster_Graph::Cluster_Graph(float d): Cluster_Container(d), Distance_Graph<Cluster*>(d, compare) {}
 
@@ -12,7 +13,7 @@ delete old clusters from heap
 */
 Cluster* Cluster_Graph::join(Cluster *cl1, Cluster *cl2)
 {
-    Cluster *combined = &Cluster::join(cl1, cl2);
+    Cluster *combined = Util_Cluster::join(cl1, cl2);
     Distance_Graph::combine_nodes_into(combined, cl1, cl2);
     cl1->clear();//delete cl1;
     cl2->clear();//delete cl2;
