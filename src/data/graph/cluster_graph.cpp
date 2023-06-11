@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "data/graph/cluster_graph.h"
-#include "util/util.h"
+#include "util/util_math.h"
 #include "util/util_cluster.h"
 
 Cluster_Graph::Cluster_Graph(float d): Cluster_Container(d), Distance_Graph<Cluster*>(d, compare) {}
@@ -41,7 +41,7 @@ void Cluster_Graph::init_clusters_fine_grained()
         Cluster *cl = new Cluster(dist);
         cl->push_back(d);
         cl->add_to_sum(*d);
-        cl->add_to_sum_of_squares(Util::sum_of_squares(*d));
+        cl->add_to_sum_of_squares(Util_Math::sum_of_squares(*d));
         Distance_Graph::add_node(cl);
     }
 }
@@ -63,5 +63,5 @@ Cluster*& Cluster_Graph::operator[](int idx)
 
 float Cluster_Graph::compare(Cluster *&cl1, Cluster *&cl2)
 {
-    return Util::euclidean_distance(*(*cl1)[0], *(*cl2)[0]);
+    return Util_Math::euclidean_distance(*(*cl1)[0], *(*cl2)[0]);
 }

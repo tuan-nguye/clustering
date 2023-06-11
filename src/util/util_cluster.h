@@ -1,5 +1,5 @@
 #include "data/cluster.h"
-#include "util/util.h"
+#include "util/util_math.h"
 
 #ifndef __util_cluster__
 #define __util_cluster__

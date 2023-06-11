@@ -2,9 +2,9 @@
 #include <stdexcept>
 #include <numeric>
 
-#include "util.h"
+#include "util_math.h"
 
-float Util::sum_of_squares(std::vector<float> &vals)
+float Util_Math::sum_of_squares(std::vector<float> &vals)
 {
     float square_magnitude = 0.0;
 
@@ -16,12 +16,12 @@ float Util::sum_of_squares(std::vector<float> &vals)
     return square_magnitude;
 }
 
-float Util::magnitude(std::vector<float> &vals)
+float Util_Math::magnitude(std::vector<float> &vals)
 {
     return (float) sqrt(sum_of_squares(vals));
 }
 
-float Util::scalar_product(std::vector<float> &v1, std::vector<float> &v2)
+float Util_Math::scalar_product(std::vector<float> &v1, std::vector<float> &v2)
 {
     if(v1.size() != v2.size()) throw std::invalid_argument("vectors have different size, can't calculate scalar product");
     
@@ -35,14 +35,14 @@ float Util::scalar_product(std::vector<float> &v1, std::vector<float> &v2)
     return scalar;
 }
 
-float Util::inner_product(std::vector<float> &v1, std::vector<float> &v2)
+float Util_Math::inner_product(std::vector<float> &v1, std::vector<float> &v2)
 {
     if(v1.size() != v2.size()) throw std::invalid_argument("vectors have different size, can't calculate scalar product");
     float scalar = std::inner_product(v1.begin(), v1.end(), v2.begin(), 0.0f);
     return scalar;
 }
 
-float Util::euclidean_distance(std::vector<float> &v1, std::vector<float> &v2)
+float Util_Math::euclidean_distance(std::vector<float> &v1, std::vector<float> &v2)
 {
     if(v1.size() != v2.size()) throw std::invalid_argument("vectors have different size, can't calculate scalar product");
     
@@ -57,7 +57,7 @@ float Util::euclidean_distance(std::vector<float> &v1, std::vector<float> &v2)
     return sqrt(dist);
 }
 
-float Util::d_all_pairs(int size, float d)
+float Util_Math::d_all_pairs(int size, float d)
 {
     return (size*(size-1))/2 * d*d;
 }

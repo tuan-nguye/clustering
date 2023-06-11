@@ -3,7 +3,7 @@
 #ifndef __util_include__
 #define __util_include__
 
-class Util
+class Util_Math
 {
     public:
         static float sum_of_squares(std::vector<float> &vals);

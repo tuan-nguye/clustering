@@ -36,7 +36,7 @@ void print_some_info_about_distances(std::vector<Data*> &data)
         for(int j = i+1; j < 100; j++)
         {
             Data *d2 = data[j];
-            float d = Util::euclidean_distance(*d1, *d2);
+            float d = Util_Math::euclidean_distance(*d1, *d2);
             std::cout << d1->label << " - " << d2->label;
             std::cout << ": eucl-dist: " << d << std::endl;
 

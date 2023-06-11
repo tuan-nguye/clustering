@@ -1,5 +1,5 @@
 #include "eval/evaluation.h"
-#include "util/util.h"
+#include "util/util_math.h"
 
 #ifndef __silhouette_score_include__
 #define __silhouette_score_include__
@@ -34,7 +34,7 @@ class Silhouette_Score: public Evaluation
                         for(auto &d2 : cl)
                         {
                             if(d1 == d2) continue;
-                            dist_sum += Util::euclidean_distance(*d1, *d2);
+                            dist_sum += Util_Math::euclidean_distance(*d1, *d2);
                         }
                         a[d1] = dist_sum / (cl.size()-1);
                     }

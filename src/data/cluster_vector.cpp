@@ -1,5 +1,5 @@
 #include "data/cluster_vector.h"
-#include "util/util.h"
+#include "util/util_math.h"
 #include "util/util_cluster.h"
 
 int Cluster_Vector::size()
@@ -28,7 +28,7 @@ void Cluster_Vector::init_clusters_fine_grained()
         Cluster *cl = new Cluster(dist);
         cl->push_back(d);
         cl->add_to_sum(*d);
-        cl->add_to_sum_of_squares(Util::sum_of_squares(*d));
+        cl->add_to_sum_of_squares(Util_Math::sum_of_squares(*d));
         clusters.push_back(cl);
     }
 }
