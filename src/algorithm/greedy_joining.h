@@ -61,18 +61,22 @@ class Greedy_Joining: public Clustering
 
         // functions updating cache with new values
         void update_cache(Cache &cache, Cluster_Container &cls_container);
+        void update_cache_single(Cache &cache, Cluster_Container &cls_container);
         void update_cache_parallel(Cache &cache, Cluster_Container &cls_container);
         void update_cache_parallel_thread(Cache &cache, Cluster_Container &cls_container, std::mutex *mtx, int start, int end);
-        void update_cache_single(Cache &cache, Cluster *cl1, Cluster_Container &cls_container, std::mutex *mtx);
+        void update_cache_operation(Cache &cache, Cluster_Container &cls_container, std::mutex *mtx, Cluster *cl1);
 
         // functions for iterating through all pairs
-        void best_pair_iterate_parallel(Edge &e, Cluster_Container &cls_container);
-        void best_pair_iterate_parallel_thread(Edge &e, Cluster_Container &cls_container, std::mutex *mtx, int start, int end);
-        void best_pair_iterate_single(Edge &e, Cluster_Container &cls_container, std::mutex *mtx, Cluster *cl1);
+        void best_pair_iterate(Edge &best, Cluster_Container &cls_container);
+        void best_pair_iterate_single(Edge &best, Cluster_Container &cls_container);
+        void best_pair_iterate_parallel(Edge &best, Cluster_Container &cls_container);
+        void best_pair_iterate_parallel_thread(Edge &best, Cluster_Container &cls_container, std::mutex *mtx, int start, int end);
+        void best_pair_iterate_operation(Edge &best, Cluster_Container &cls_container, std::mutex *mtx, Cluster *cl1);
 
         // get next valid pair of clusters to join
         Edge get_next_pair_pq(Cache &cache);
-        Edge get_next_pair_iterate(Edge &e, Cluster_Container &cls_container);
+        Edge get_next_pair_iterate(Cluster_Container &cls_container);
+        void join_clusters(Edge &e, Cache &cache, Cluster_Container &cls_container);
     public:
         Greedy_Joining() {};
         std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d);

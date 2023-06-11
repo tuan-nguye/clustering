@@ -21,17 +21,23 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     for(Data *d : input) cls_graph.add_data(d);
     cls_graph.init_clusters_fine_grained();
     std::cout << "time to build Distance_Graph: " << timer.stop() << std::endl;
-    std::unordered_set<uintptr_t> addresses;
-    for(Cluster *cl : cls_graph) addresses.insert(reinterpret_cast<uintptr_t>(cl));
-    
+
     Cache cache;
     cache.to_update.insert(cache.to_update.end(), cls_graph.begin(), cls_graph.end());
 
     while(1)
     {
         int num_cls = cls_graph.size();
-        update_cache(cache, cls_graph);
-        Edge top = get_next_pair_pq(cache);
+
+        Edge top;
+        if(cache_enabled)
+        {
+            update_cache(cache, cls_graph);
+            top = get_next_pair_pq(cache);
+        } else 
+        {
+            best_pair_iterate(top, cls_graph);
+        }
 
         //std::cout << "cl1 exists: " << cls_graph.find(std::get<1>(top)) << ", cl2 exists: " << cls_graph.find(std::get<2>(top)) << std::endl;
         std::cout << "number of clusters: " << cls_graph.size() << ", pq size: " << cache.pq.size() << ", score improvement: " << std::get<0>(top) << std::endl;
@@ -42,19 +48,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         if(std::get<0>(top) >= 0) break;
 
         //std::cout << "join: " << std::get<1>(top)->to_string() << " - " << std::get<2>(top)->to_string() << std::endl;
-        Cluster *cl1 = std::get<1>(top), *cl2 = std::get<2>(top);
-
-        // join clusters and update the score
-        //std::cout << "num clusters before: " << cls_graph.size() << std::endl;
-        Cluster *cl_joined = cls_graph.join(cl1, cl2);
-        cache.invalid.insert(cl1);
-        cache.invalid.insert(cl2);
-        //std::cout << "cl_joined pointer reused: " << (addresses.find(reinterpret_cast<uintptr_t>(cl_joined)) != addresses.end()) << std::endl;
-        //std::cout << "num clusters after: " << cls_graph.size() << std::endl;
-        
-        // select next clusters to update cache
-        cache.to_update.clear();
-        cache.to_update.push_back(cl_joined);
+        join_clusters(top, cache, cls_graph);
     }
 
     std::cout << "cmp_count: " << cmp_count << std::endl;
@@ -76,12 +70,22 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
 
 void Greedy_Joining::update_cache(Cache &cache, Cluster_Container &cls_container)
 {
-    if(cache.to_update.size() == 1)
+    if(parallel_enabled)
     {
-        update_cache_single(cache, cache.to_update[0], cls_container, nullptr);
+        if(cache.to_update.size() == 1) update_cache_operation(cache, cls_container, nullptr, cache.to_update[0]);
+        else update_cache_parallel(cache, cls_container);
     } else
     {
-        update_cache_parallel(cache, cls_container);
+        update_cache_single(cache, cls_container);
+    }
+    
+}
+
+void Greedy_Joining::update_cache_single(Cache &cache, Cluster_Container &cls_container)
+{
+    for(Cluster *cl1 : cache.to_update)
+    {
+        update_cache_operation(cache, cls_container, nullptr, cl1);
     }
 }
 
@@ -110,11 +114,11 @@ void Greedy_Joining::update_cache_parallel_thread(Cache &cache, Cluster_Containe
     for(int i = start; i < end; i++)
     {
         Cluster *cl1 = cache.to_update[i];
-        update_cache_single(cache, cl1, cls_container, mtx);
+        update_cache_operation(cache, cls_container, mtx, cl1);
     }
 }
 
-void Greedy_Joining::update_cache_single(Cache &cache, Cluster *cl1, Cluster_Container &cls_container, std::mutex *mtx)
+void Greedy_Joining::update_cache_operation(Cache &cache, Cluster_Container &cls_container, std::mutex *mtx, Cluster *cl1)
 {
     float cl1_size = cl1->size();
     //std::cout << i++ << std::endl;
@@ -146,6 +150,79 @@ void Greedy_Joining::update_cache_single(Cache &cache, Cluster *cl1, Cluster_Con
     //std::cout << std::endl;
 }
 
+void Greedy_Joining::best_pair_iterate(Edge &best, Cluster_Container &cls_container)
+{
+    if(parallel_enabled) best_pair_iterate_parallel(best, cls_container);
+    else best_pair_iterate_single(best, cls_container);
+}
+
+void Greedy_Joining::best_pair_iterate_single(Edge &best, Cluster_Container &cls_container)
+{
+    for(Cluster *cl1 : cls_container)
+    {
+        best_pair_iterate_operation(best, cls_container, nullptr, cl1);
+    }
+}
+
+void Greedy_Joining::best_pair_iterate_parallel(Edge &best, Cluster_Container &cls_container)
+{
+    int size = cls_container.size();
+    std::mutex mtx;
+    std::vector<std::thread> threads;
+
+    for(int i = 0; i < num_threads; i++)
+    {
+        int start = i*size/num_threads;
+        int end = (i+1)*size/num_threads;
+        if(start == end) continue;
+        threads.emplace_back(&Greedy_Joining::best_pair_iterate_parallel_thread, this, std::ref(best), std::ref(cls_container), &mtx, start, end);
+    }
+
+    for(std::thread &thread : threads)
+    {
+        thread.join();
+    }
+}
+
+void Greedy_Joining::best_pair_iterate_parallel_thread(Edge &best, Cluster_Container &cls_container, std::mutex *mtx, int start, int end)
+{
+    for(int i = start; i < end; i++)
+    {
+        Cluster *cl1 = cls_container[i];
+        best_pair_iterate_operation(best, cls_container, mtx, cl1);
+    }
+}
+
+void Greedy_Joining::best_pair_iterate_operation(Edge &best, Cluster_Container &cls_container, std::mutex *mtx, Cluster *cl1)
+{
+    std::vector<Cluster*> neighbours1;
+    cls_container.get_neighbours(neighbours1, cl1);
+
+    for(Cluster *cl2 : neighbours1)
+    {
+        float f_diff = Util_Cluster::f_diff(cl1, cl2);
+        float d_diff = Util_Cluster::d_diff(cl1, cl2, distance);
+        cmp_count++;
+
+        if(f_diff+d_diff < std::get<0>(best))
+        {
+            if(mtx != nullptr)
+            {
+                std::lock_guard<std::mutex> lock(*mtx);
+                std::get<0>(best) = f_diff+d_diff;
+                std::get<1>(best) = cl1;
+                std::get<2>(best) = cl2;
+            } else
+            {
+                std::get<0>(best) = f_diff+d_diff;
+                std::get<1>(best) = cl1;
+                std::get<2>(best) = cl2;
+            }
+            
+        }
+    }
+}
+
 Edge Greedy_Joining::get_next_pair_pq(Cache &cache)
 {
     Edge top;
@@ -160,60 +237,23 @@ Edge Greedy_Joining::get_next_pair_pq(Cache &cache)
     return top;
 }
 
-void Greedy_Joining::best_pair_iterate_parallel(Edge &e, Cluster_Container &cls_container)
+Edge Greedy_Joining::get_next_pair_iterate(Cluster_Container &cls_container)
 {
-    int size = cls_container.size();
-    std::mutex mtx;
-    std::vector<std::thread> threads;
-
-    for(int i = 0; i < num_threads; i++)
-    {
-        int start = i*size/num_threads;
-        int end = (i+1)*size/num_threads;
-        if(start == end) continue;
-        threads.emplace_back(&Greedy_Joining::best_pair_iterate_parallel_thread, this, std::ref(e), std::ref(cls_container), &mtx, start, end);
-    }
-
-    for(std::thread &thread : threads)
-    {
-        thread.join();
-    }
+    Edge best;
+    best_pair_iterate(best, cls_container);
+    return best;
 }
 
-void Greedy_Joining::best_pair_iterate_parallel_thread(Edge &e, Cluster_Container &cls_container, std::mutex *mtx, int start, int end)
+void Greedy_Joining::join_clusters(Edge &e, Cache &cache, Cluster_Container &cls_container)
 {
-    for(int i = start; i < end; i++)
+    Cluster *cl1 = std::get<1>(e), *cl2 = std::get<2>(e);
+    Cluster *cl_joined = cls_container.join(cl1, cl2);
+
+    if(cache_enabled)
     {
-        Cluster *cl1 = cls_container[i];
-        best_pair_iterate_single(e, cls_container, mtx, cl1);
-    }
-}
-
-void Greedy_Joining::best_pair_iterate_single(Edge &e, Cluster_Container &cls_container, std::mutex *mtx, Cluster *cl1)
-{
-    std::vector<Cluster*> neighbours1;
-    cls_container.get_neighbours(neighbours1, cl1);
-
-    for(Cluster *cl2 : neighbours1)
-    {
-        float f_diff = Util_Cluster::f_diff(cl1, cl2);
-        float d_diff = Util_Cluster::d_diff(cl1, cl2, distance);
-
-        if(f_diff+d_diff < std::get<0>(e))
-        {
-            if(mtx != nullptr)
-            {
-                std::lock_guard<std::mutex> lock(*mtx);
-                std::get<0>(e) = f_diff+d_diff;
-                std::get<1>(e) = cl1;
-                std::get<2>(e) = cl2;
-            } else
-            {
-                std::get<0>(e) = f_diff+d_diff;
-                std::get<1>(e) = cl1;
-                std::get<2>(e) = cl2;
-            }
-            
-        }
+        cache.invalid.insert(cl1);
+        cache.invalid.insert(cl2);
+        cache.to_update.clear();
+        cache.to_update.push_back(cl_joined);
     }
 }
