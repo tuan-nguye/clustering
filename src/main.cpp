@@ -12,6 +12,7 @@
 #include "data/structures/maptor.h"
 #include "data/graph/distance_graph.h"
 #include "util/time/time.h"
+#include "eval/print_result_table.h"
 
 void print_digit_with_label(Data *d)
 {
@@ -85,7 +86,7 @@ int main()
     Clustering *clustering = &gr_joining;
 
     timer.start();
-    float d = 1.2f; // test: 4.0, iris: 1.2, mnist: 2000.0
+    float d = 2.45f; // test: 4.0, iris: 1.2, mnist: 2000.0
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
     std::cout << "runtime in seconds: " << timer.stop() << std::endl;
 
@@ -108,6 +109,8 @@ int main()
         std::cout << typeid(*metric).name() << ": " << metric->execute(clustering_result) << std::endl;
     }
 
-    
+    Print_Result_Table print_result;
+    print_result.print(clustering_result);
+
     return 0;
 }
