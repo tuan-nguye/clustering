@@ -9,6 +9,40 @@ template<typename T> class Maptor
     private:
         std::vector<T> element_vec;
         std::unordered_map<T, int> idx_map;
+        void merge_sort(int l, int r)
+        {
+            if(r-l <= 1) return;
+
+            int m = (l+r)/2;
+            merge_sort(l, m);
+            merge_sort(m, r);
+
+            std::vector<T> temp_array(element_vec.begin()+l, element_vec.begin()+r);
+            int i = l, tl = 0, tm = m-l, tr = tm;
+            while(i < r)
+            {
+                if(tl == tm)
+                {
+                    idx_map[temp_array[tr]] = i;
+                    element_vec[i++] = temp_array[tr++];   
+                } else if(tr == r-l)
+                {
+                    idx_map[temp_array[tl]] = i;
+                    element_vec[i++] = temp_array[tl++];
+                } else
+                {
+                    if(temp_array[tl] < temp_array[tr])
+                    {
+                        idx_map[temp_array[tl]] = i;
+                        element_vec[i++] = temp_array[tl++];
+                    } else
+                    {
+                        idx_map[temp_array[tr]] = i;
+                        element_vec[i++] = temp_array[tr++];
+                    }
+                }
+            }
+        }
     public:
         void push_back(T &elem)
         {
@@ -76,6 +110,11 @@ template<typename T> class Maptor
         bool find(T &elem)
         {
             return idx_map.find(elem) != idx_map.end();
+        }
+
+        void sort()
+        {
+            merge_sort(0, size());
         }
 
         T* begin() { return &element_vec[0]; }

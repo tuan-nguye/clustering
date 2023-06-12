@@ -36,10 +36,6 @@ class Print_Result_Table
                 if(label_orig.length() > max_length_orig) max_length_orig = label_orig.length();
             }
 
-            std::string str = "test";
-            pad(str, 10, '_');
-            std::cout << str << std::endl;
-
             // table config
             char pad_char = ' ', vertical_border = '|', horizontal_border = '-';
             int first_cell_width = max_length_orig;
@@ -51,6 +47,8 @@ class Print_Result_Table
             for(int i = 0; i < labels_clus.size(); i++) row_border += row_border_block;
             pad(row_border, table_width, horizontal_border);
             std::string line;
+
+            labels_clus.sort();
 
             // print column headers
             line.append(first_cell_width, pad_char);

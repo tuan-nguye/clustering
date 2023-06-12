@@ -86,7 +86,7 @@ int main()
     Clustering *clustering = &gr_joining;
 
     timer.start();
-    float d = 2.45f; // test: 4.0, iris: 1.2, mnist: 2000.0
+    float d = 2.5f; // test: 4.0, iris: 1.2, mnist: 2000.0
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
     std::cout << "runtime in seconds: " << timer.stop() << std::endl;
 
