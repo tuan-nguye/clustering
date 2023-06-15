@@ -92,16 +92,29 @@ int main()
     //ae_graph = &dist_graph;
     ae_graph = &knn_graph;
 
-    Cluster_Container *cls_graph = new Cluster_Graph(d, ae_graph);
+    Cluster_Container *cls_container = new Cluster_Graph(d, ae_graph);
     Greedy_Joining gr_joining;
     gr_joining.set_cache(true);
-    gr_joining.set_container(cls_graph);
+    gr_joining.set_container(cls_container);
     gr_joining.set_parallel(true);
     Clustering *clustering = &gr_joining;
 
-    for(Data *d : data) cls_graph->add_data(d);
-    cls_graph->init_clusters_fine_grained();
+    for(Data *d : data) cls_container->add_data(d);
+    cls_container->init_clusters_fine_grained();
     std::cout << knn_graph.size() << std::endl;
+
+    for(Cluster *cl : *cls_container)
+    {
+        std::vector<Cluster*> neighbours;
+        cls_container->get_neighbours(neighbours, cl);
+        std::cout << cl->to_string() << "\nchildren: ";
+        for(Cluster *neigh : neighbours)
+        {
+            std::cout << neigh->to_string() << ", ";
+        }
+        std::cout << std::endl << std::endl;
+    }
+
     return 0;
 
     timer.start();

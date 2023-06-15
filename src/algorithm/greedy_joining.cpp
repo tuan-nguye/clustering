@@ -18,6 +18,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     timer.start();
     distance = dist;
     
+    // clear cls_container
     for(Data *d : input) cls_container->add_data(d);
     cls_container->init_clusters_fine_grained();
     std::cout << "time to build container structure: " << timer.stop() << std::endl;
