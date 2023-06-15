@@ -10,17 +10,13 @@ template <typename T> class Node
 {
     private:
         T t;
-        std::vector<Node<T>*> children;
     public:
         Node(T t): t(t) {}
         T& get_value() { return t; }
-        std::vector<Node<T>*>& get_children() { return children; }
-        void remove_child(Node<T> *n)
-        {
-            children.erase(std::remove(children.begin(), children.end(), n), children.end());
-        }
-        void add_child(Node<T> *n) { children.push_back(n); }
-        void clear_children() { children.clear(); }
+        virtual std::vector<Node<T>*>& get_children() = 0;
+        virtual void remove_child(Node<T> *n) = 0;
+        virtual void add_child(Node<T> *n) = 0;
+        virtual void clear_children() = 0;
 };
 
 #endif

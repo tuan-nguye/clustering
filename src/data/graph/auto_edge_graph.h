@@ -1,4 +1,5 @@
-
+#include <mutex>
+#include <thread>
 #include "data/graph/graph.h"
 
 extern int num_threads;
@@ -48,7 +49,6 @@ template<typename T> class Auto_Edge_Graph: protected Graph<T>
         void add_node(T &t)
         {
             Graph<T>::add_node(t);
-            Maptor<T>& elements = get_all_elements();
             add_edges_parallel(t);
         }
 

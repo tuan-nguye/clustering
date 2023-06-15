@@ -13,6 +13,9 @@
 #include "data/graph/distance_graph.h"
 #include "util/time/time.h"
 #include "eval/print_result_table.h"
+#include "util/util_cluster.h"
+#include "data/graph/auto_edge_graph.h"
+#include "data/graph/knn_graph.h"
 
 void print_digit_with_label(Data *d)
 {
@@ -63,6 +66,7 @@ int num_threads = std::thread::hardware_concurrency();
 
 int main()
 {
+    // parse data
     std::vector<Data*> data;
 
     Parser *parser;
@@ -70,23 +74,37 @@ int main()
     Ubyte_Parser ubyte_parser;
 
     parser = &csv_parser;
-    //parser->parse(data, "./res/test/test_example.data");
-    parser->parse(data, "./res/iris/iris_data.data");
+    parser->parse(data, "./res/test/test_example.data");
+    //parser->parse(data, "./res/iris/iris_data.data");
     //parser = &ubyte_parser;
     //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     //parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
     std::cout << "number of data objects: " << data.size() << std::endl;
 
+    // configure algorithm and select cluster data structure
+    float d = 1.2f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2000.0
+    int k = 1;
     Time timer;
 
+    Auto_Edge_Graph<Cluster*> *ae_graph;
+    Distance_Graph<Cluster*> dist_graph(d, &Util_Cluster::min_distance);
+    KNN_Graph<Cluster*> knn_graph(k, d, &Util_Cluster::score_diff);
+    //ae_graph = &dist_graph;
+    ae_graph = &knn_graph;
+
+    Cluster_Container *cls_graph = new Cluster_Graph(d, ae_graph);
     Greedy_Joining gr_joining;
     gr_joining.set_cache(true);
-    gr_joining.set_container(Greedy_Joining::container_type::DISTANCE);
+    gr_joining.set_container(cls_graph);
     gr_joining.set_parallel(true);
     Clustering *clustering = &gr_joining;
 
+    for(Data *d : data) cls_graph->add_data(d);
+    cls_graph->init_clusters_fine_grained();
+    std::cout << knn_graph.size() << std::endl;
+    return 0;
+
     timer.start();
-    float d = 2.5f; // test: 4.0, iris: 1.2, mnist: 2000.0
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
     std::cout << "runtime in seconds: " << timer.stop() << std::endl;
 

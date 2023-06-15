@@ -17,8 +17,6 @@ typedef std::priority_queue<Edge, std::vector<Edge>, std::greater<Edge>> MinPrio
 
 class Greedy_Joining: public Clustering
 {
-    public:
-        enum container_type { VECTOR = 0, DISTANCE = 1, KNN = 2 };
     private:
         // optimization configuration
         
@@ -27,7 +25,7 @@ class Greedy_Joining: public Clustering
 
         // selects container type, default is vector
         // graphs are the performance options
-        container_type container = container_type::VECTOR;
+        Cluster_Container *cls_container;
         /* should actually be a map that stores type as key and
         the class as value to invoke the class's constructor inside
         the execution function but no idead how it works
@@ -92,7 +90,7 @@ class Greedy_Joining: public Clustering
         std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d);
 
         void set_cache(bool value) { cache_enabled = value; }
-        void set_container(container_type type) { container = type; }
+        void set_container(Cluster_Container *cls_cont) { cls_container = cls_cont; }
         void set_parallel(bool value) { parallel_enabled = value; }
 };
 

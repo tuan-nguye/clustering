@@ -10,7 +10,7 @@ int Cluster_Vector::size()
 // modifiers
 Cluster* Cluster_Vector::join(Cluster *cl1, Cluster *cl2)
 {
-    Cluster* joined = Util_Cluster::join(cl1, cl2);
+    Cluster* joined = Util_Cluster::join(cl1, cl2, this->get_d());
     clusters.push_back(joined);
     cl1->clear();
     cl2->clear();
@@ -26,7 +26,7 @@ void Cluster_Vector::init_clusters_fine_grained()
 
     for(Data *d : get_data())
     {
-        Cluster *cl = new Cluster(dist);
+        Cluster *cl = new Cluster();
         cl->push_back(d);
         cl->add_to_sum(*d);
         cl->add_to_sum_of_squares(Util_Math::sum_of_squares(*d));

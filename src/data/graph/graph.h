@@ -2,6 +2,7 @@
 #include <unordered_map>
 
 #include "data/graph/node.h"
+#include "data/graph/default_node.h"
 #include "data/structures/maptor.h"
 
 #ifndef __graph_include__
@@ -20,7 +21,7 @@ template<typename T> class Graph
 
         virtual Node<T>* create_node(T &t)
         {
-            Node<T> *node = new Node<T>(t);
+            Node<T> *node = new Default_Node<T>(t);
             return node;
         }
     public:
@@ -60,11 +61,23 @@ template<typename T> class Graph
             n2->add_child(n1);
         }
 
+        void add_edge_directed(T &t1, T &t2)
+        {
+            Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
+            n1->add_child(n2);
+        }
+
         void remove_edge(T &t1, T &t2)
         {
             Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
             n1->remove_child(n2);
             n2->remove_child(n1);
+        }
+
+        void remove_edge_directed(T &t1, T &t2)
+        {
+            Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
+            n1->remove_child(n2);
         }
 
         void get_children(std::vector<T>& vec, T &t)

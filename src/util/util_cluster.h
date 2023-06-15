@@ -7,9 +7,11 @@
 class Util_Cluster
 {
     public:
-        static Cluster* join(Cluster *cl1, Cluster *cl2);
-        static float f_diff(Cluster *cl1, Cluster *cl2);
-        static float d_diff(Cluster *cl1, Cluster *cl2, float d);
+        static Cluster* join(Cluster *&cl1, Cluster *&cl2, float d);
+        static float f_diff(Cluster *&cl1, Cluster *&cl2);
+        static float d_diff(Cluster *&cl1, Cluster *&cl2, float d);
+        static float score_diff(Cluster *&cl1, Cluster *&cl2, float d);
+        static float min_distance(Cluster *&cl1, Cluster *&cl2);
 };
 
 #endif

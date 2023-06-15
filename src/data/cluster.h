@@ -10,11 +10,10 @@ class Cluster: public std::vector<Data*>
     private:
         std::vector<float> sum;
         float sum_of_squares = 0;
-        float dist;
         float f = 0;
         float score = 0;
     public:
-        Cluster(float d): dist(d) {}
+        Cluster() {}
 
         std::vector<float>& get_sum() { return sum; }
 
@@ -48,8 +47,6 @@ class Cluster: public std::vector<Data*>
         float get_score() { return score; }
 
         void set_score(float value) { score = value; }
-
-        float get_distance() { return dist; }
 
         std::string to_string()
         {
