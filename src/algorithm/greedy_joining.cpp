@@ -55,12 +55,12 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     std::cout << "cmp_count: " << cmp_count << std::endl;
 
     std::unordered_map<Data*, std::string> cluster_map;
-    int label = 0;
+    char label = 'a';
     for(auto &cl : *cls_container)
     {
         for(auto &elem : *cl)
         {
-            cluster_map[elem] = std::to_string(label);
+            cluster_map[elem] = label;
         }
         label++;
     }

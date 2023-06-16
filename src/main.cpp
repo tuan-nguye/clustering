@@ -89,8 +89,8 @@ int main()
     Auto_Edge_Graph<Cluster*> *ae_graph;
     Distance_Graph<Cluster*> dist_graph(d, &Util_Cluster::min_distance);
     KNN_Graph<Cluster*> knn_graph(k, d, &Util_Cluster::score_diff);
-    //ae_graph = &dist_graph;
-    ae_graph = &knn_graph;
+    ae_graph = &dist_graph;
+    //ae_graph = &knn_graph;
 
     Cluster_Container *cls_container = new Cluster_Graph(d, ae_graph);
     Greedy_Joining gr_joining;
@@ -98,7 +98,7 @@ int main()
     gr_joining.set_container(cls_container);
     gr_joining.set_parallel(true);
     Clustering *clustering = &gr_joining;
-
+    /*
     for(Data *d : data) cls_container->add_data(d);
     cls_container->init_clusters_fine_grained();
     std::cout << knn_graph.size() << std::endl;
@@ -116,6 +116,7 @@ int main()
     }
 
     return 0;
+    */
 
     timer.start();
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
