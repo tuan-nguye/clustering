@@ -74,15 +74,15 @@ int main()
     Ubyte_Parser ubyte_parser;
 
     parser = &csv_parser;
-    parser->parse(data, "./res/test/test_example.data");
-    //parser->parse(data, "./res/iris/iris_data.data");
+    //parser->parse(data, "./res/test/test_example.data");
+    parser->parse(data, "./res/iris/iris_data.data");
     //parser = &ubyte_parser;
     //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     //parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm and select cluster data structure
-    float d = 1.2f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2000.0
+    float d = 2.5f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2000.0
     int k = 1;
     Time timer;
 

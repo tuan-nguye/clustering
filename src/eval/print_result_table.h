@@ -86,6 +86,25 @@ class Print_Result_Table
                 line.insert(0, label_clus);
                 std::cout << row_border << '\n' << line << std::endl;
             }
+
+            // calculate accuracy
+            int total = 0, correct = 0;
+
+            for(auto &e1 : count_map)
+            {
+                std::string label_clus = e1.first;
+                int max = 0, sum = 0;
+                for(auto &e2 : e1.second)
+                {
+                    int count = e2.second;
+                    if(count > max) max = count;
+                    sum += count;
+                }
+                total += sum;
+                correct += max;
+            }
+
+            std::cout << "\ncorrect: " << float(correct)/total*100 << "%" << std::endl;
         }
 };
 
