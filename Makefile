@@ -6,11 +6,12 @@ SRCDIR = ./src
 
 DEFAULT_CPPFLAGS = -I $(SRCDIR)
 EXEC_CPPFLAGS = -Ofast
-DEBUG_CPPFLAGS = -g
+DEBUG_CPPFLAGS = -g3
 CPPFLAGS = $(DEFAULT_CPPFLAGS) $(EXEC_CPPFLAGS)
 
 # commands
 CPP = g++
+GDB = gdb
 
 # list of all cpp files in src directory
 CPP_SOURCES = $(call rwildcard, $(SRCDIR), *.cpp)
@@ -32,7 +33,7 @@ all: $(OBJDIR)/$(OUTPUT) run
 # debug target, should add -g as flag and make compile time less
 # by removing optimization flags
 debug: CPPFLAGS = $(DEFAULT_CPPFLAGS) $(DEBUG_CPPFLAGS)
-debug: $(OBJDIR)/$(OUTPUT) run
+debug: $(OBJDIR)/$(OUTPUT) debugger
 
 # rules to generate object files
 $(OBJDIR)/%.o: %.cpp
@@ -50,8 +51,14 @@ clean:
 # create build directory if it doesn't exist
 $(shell mkdir -p $(OBJDIR))
 
+# run the output file
 run:
 	$(OBJDIR)/$(OUTPUT)
+
+# run the output file with gdb
+# commands in gdb: run, bt, print, list
+debugger:
+	$(GDB) $(OBJDIR)/$(OUTPUT)
 
 # run tests: doesn't work
 
