@@ -4,7 +4,10 @@ rwildcard = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(
 OBJDIR = ./build
 SRCDIR = ./src
 
-CPPFLAGS = -I $(SRCDIR) -Ofast
+DEFAULT_CPPFLAGS = -I $(SRCDIR)
+EXEC_CPPFLAGS = -Ofast
+DEBUG_CPPFLAGS = -g
+CPPFLAGS = $(DEFAULT_CPPFLAGS) $(EXEC_CPPFLAGS)
 
 # commands
 CPP = g++
@@ -26,6 +29,11 @@ OUTPUT = cluster
 # default target builds the output file and executes it
 all: $(OBJDIR)/$(OUTPUT) run
 
+# debug target, should add -g as flag and make compile time less
+# by removing optimization flags
+debug: CPPFLAGS = $(DEFAULT_CPPFLAGS) $(DEBUG_CPPFLAGS)
+debug: $(OBJDIR)/$(OUTPUT) run
+
 # rules to generate object files
 $(OBJDIR)/%.o: %.cpp
 	@echo "CPP $@"
@@ -45,7 +53,7 @@ $(shell mkdir -p $(OBJDIR))
 run:
 	$(OBJDIR)/$(OUTPUT)
 
-# run tests
+# run tests: doesn't work
 
 TEST_OUTPUT = tests
 
