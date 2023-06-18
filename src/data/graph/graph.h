@@ -1,5 +1,6 @@
 #include <vector>
 #include <unordered_map>
+#include <iostream>
 
 #include "data/graph/node.h"
 #include "data/graph/default_node.h"
@@ -36,7 +37,7 @@ template<typename T> class Graph
         {
             Node<T> *node = get_node(t);
             std::vector<Node<T>*> &children = node->get_children();
-
+            
             auto it = children.begin();
             while(it != children.end())
             {

@@ -16,6 +16,7 @@ template <typename T> class Node
         virtual std::vector<Node<T>*>& get_children() = 0;
         virtual void remove_child(Node<T> *n) = 0;
         virtual void add_child(Node<T> *n) = 0;
+        virtual bool contains_child(Node<T> *n) = 0;
         virtual void clear_children() = 0;
 };
 

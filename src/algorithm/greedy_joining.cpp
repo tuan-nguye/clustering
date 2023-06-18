@@ -28,6 +28,21 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
 
     while(1)
     {
+        std::cout << "outgoing" << std::endl;
+        for(Cluster *cl : *cls_container)
+        {
+            std::vector<Cluster*> neighbours;
+            cls_container->get_neighbours(neighbours, cl);
+            std::cout << cl->to_string() << ", children: ";
+            std::cout << neighbours.size();
+            for(Cluster *neigh : neighbours)
+            {
+                std::cout << neigh->to_string() << ", ";
+            }
+            std::cout << std::endl;
+        }
+
+
         int num_cls = cls_container->size();
 
         Edge top;

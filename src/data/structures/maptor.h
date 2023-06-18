@@ -1,5 +1,7 @@
 #include <vector>
 #include <unordered_map>
+#include <iostream>
+#include <stdexcept>
 
 #ifndef __maptor_include__
 #define __maptor_include__
@@ -71,10 +73,13 @@ template<typename T> class Maptor
             int idx = idx_map[elem];
             idx_map.erase(elem);
             T &last = element_vec.back();
-            element_vec[idx] = last;
-            idx_map[last] = idx;
-
+            if(last != elem)
+            {
+                element_vec[idx] = last;
+                idx_map[last] = idx;
+            }
             element_vec.pop_back();
+            if(element_vec.size() != idx_map.size()) throw std::invalid_argument("maptor have different size");
             return true;
         }
 
@@ -82,22 +87,27 @@ template<typename T> class Maptor
         {
             if(!find(elem)) return false;
             int idx = idx_map[elem];
-            T &last = element_vec.back();
-            element_vec[idx] = last;
-            idx_map[last] = idx;
-
-            element_vec.pop_back();
             idx_map.erase(elem);
+            T &last = element_vec.back();
+            if(last != elem)
+            {
+                element_vec[idx] = last;
+                idx_map[last] = idx;
+            }
+            element_vec.pop_back();
             return true;
         }
 
         T* erase(T *pos)
         {
-            if(!erase(*pos)) return &element_vec[size()];
+            if(!erase(*pos)) return this->end();
             return pos;
         }
 
-        int size() { return element_vec.size(); }
+        int size()
+        {
+            return element_vec.size();
+        }
 
         bool empty() { return element_vec.empty(); }
 

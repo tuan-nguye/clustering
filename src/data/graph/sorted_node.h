@@ -1,6 +1,7 @@
 #include <vector>
 #include <algorithm>
 #include <tuple>
+#include <iostream>
 
 #include "data/graph/node.h"
 
@@ -21,16 +22,18 @@ template <typename T> class Sorted_Node: public Node<T>
             if(children.empty()) return 0;
              
             T &node_val = this->get_value();
-            int target_val = cmp(node_val, t, d);
-            int l = 0, r = children.size();
+            float target_val = cmp(node_val, t, d);
+            int l = 0, r = children.size()-1;
 
             while(l <= r)
             {
                 int m = (l+r)/2;
-                float val_m = cmp(children[m]->get_value(), node_val, d);
+                //std::cout << "(l, m, r, size) = " << "(" << l << ", " << m << ", " << r << ", " << children.size() << ")" << std::endl;
+                T &tm = children[m]->get_value();
+                if(tm == t) return m;
 
-                if(val_m == target_val) return m;
-                else if(val_m < target_val) l = m+1;
+                float val_m = cmp(node_val, tm, d);
+                if(val_m < target_val) l = m+1;
                 else r = m-1;
             }
 
@@ -57,6 +60,12 @@ template <typename T> class Sorted_Node: public Node<T>
             int idx = binary_search(n->get_value());
             if(idx == children.size()) children.push_back(n);
             else children.insert(children.begin()+idx, n);
+        }
+
+        bool contains_child(Node<T> *n)
+        {
+            int idx = binary_search(n->get_value());
+            return idx != children.size() && children[idx] == n;
         }
         
         void clear_children() { children.clear(); }
