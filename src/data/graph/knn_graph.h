@@ -86,6 +86,7 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
 
         void combine_nodes_into(T &c, T &t1, T &t2)
         {
+            /*
             std::cout << "\nincoming" << std::endl;
             for(auto &e : incoming)
             {
@@ -93,7 +94,7 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
                 for(Node<T> *n : e.second) std::cout << n->get_value()->to_string() << ", ";
                 std::cout << std::endl;
             }
-
+            */
             Graph<T>::add_node(c);
             Node<T> *nc = Graph<T>::get_node(c);
             Node<T> *n1 = this->get_node(t1), *n2 = this->get_node(t2);

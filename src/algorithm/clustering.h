@@ -12,6 +12,18 @@ class Clustering
 {
     public:
         virtual std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d) = 0;
+        std::string generate_label(int n)
+        {
+            std::string label;
+
+            while(n >= 0)
+            {
+                label = char('a' + n%26) + label;
+                n = n/26 - 1;
+            }
+
+            return label;
+        }
 };
 
 #endif

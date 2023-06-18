@@ -16,6 +16,7 @@
 #include "util/util_cluster.h"
 #include "data/graph/auto_edge_graph.h"
 #include "data/graph/knn_graph.h"
+#include "data/cluster_vector.h"
 
 void print_digit_with_label(Data *d)
 {
@@ -73,30 +74,37 @@ int main()
     CSV_Parser csv_parser;
     Ubyte_Parser ubyte_parser;
 
-    parser = &csv_parser;
-    parser->parse(data, "./res/test/test_example.data");
+    //parser = &csv_parser;
+    //parser->parse(data, "./res/test/test_example.data");
     //parser->parse(data, "./res/iris/iris_data.data");
-    //parser = &ubyte_parser;
-    //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
+    parser = &ubyte_parser;
+    parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     //parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
+    
+    data.resize(1000);
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm and select cluster data structure
-    float d = 4.0f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2000.0
+    float d = 2200.0f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2000.0
     int k = 4;
     Time timer;
 
     Auto_Edge_Graph<Cluster*> *ae_graph;
     Distance_Graph<Cluster*> dist_graph(d, &Util_Cluster::min_distance);
     KNN_Graph<Cluster*> knn_graph(k, d, &Util_Cluster::score_diff);
-    //ae_graph = &dist_graph;
-    ae_graph = &knn_graph;
+    ae_graph = &dist_graph;
+    //ae_graph = &knn_graph;
+    Cluster_Graph cls_graph(d, ae_graph);
+    Cluster_Vector cls_vector(d);
 
-    Cluster_Container *cls_container = new Cluster_Graph(d, ae_graph);
+    Cluster_Container *cls_container;
+    //cls_container = &cls_graph;
+    cls_container = &cls_vector;
+
     Greedy_Joining gr_joining;
-    gr_joining.set_cache(true);
+    gr_joining.set_cache(false);
     gr_joining.set_container(cls_container);
-    gr_joining.set_parallel(true);
+    gr_joining.set_parallel(false);
     Clustering *clustering = &gr_joining;
      /*
     for(Data *d : data) cls_container->add_data(d);
@@ -121,7 +129,7 @@ int main()
 
     timer.start();
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
-    std::cout << "runtime in seconds: " << timer.stop() << std::endl;
+    double exec_time = timer.stop();
 
     std::unordered_set<std::string> labels;
     for(auto &entry : clustering_result)
@@ -130,7 +138,6 @@ int main()
         labels.insert(entry.second);
     }
 
-    std::cout << "number of clusters: " << labels.size() << std::endl;
     
     Rand_Index ri = Rand_Index();
     Adjusted_Rand_Index ari = Adjusted_Rand_Index();
@@ -142,8 +149,23 @@ int main()
         std::cout << typeid(*metric).name() << ": " << metric->execute(clustering_result) << std::endl;
     }
 
+    // print results
     Print_Result_Table print_result;
-    print_result.print(clustering_result);
+    std::string table = print_result.print(clustering_result);
+    table += "\nexecution time: " + std::to_string(exec_time);
+    table += "\nnumber of clusters: " + std::to_string(labels.size());
+    std::cout << table << std::endl;
 
+    // build directory and write file
+    std::string root = "gen";
+    if (!std::filesystem::is_directory(root))
+    {
+        if(!std::filesystem::create_directories(root))
+        {
+            std::cout << "failed to create gen/ directory" << std::endl;
+        }
+    }
+    table += "\nexecution time: " + std::to_string(exec_time);
+    print_result.write_to_file(table, root + "/" + "no_opt.txt");
     return 0;
 }

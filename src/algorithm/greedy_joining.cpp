@@ -28,6 +28,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
 
     while(1)
     {
+        /*
         std::cout << "outgoing" << std::endl;
         for(Cluster *cl : *cls_container)
         {
@@ -41,7 +42,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
             }
             std::cout << std::endl;
         }
-
+        */
 
         int num_cls = cls_container->size();
 
@@ -70,14 +71,14 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     std::cout << "cmp_count: " << cmp_count << std::endl;
 
     std::unordered_map<Data*, std::string> cluster_map;
-    char label = 'a';
+    int i = 0;
     for(auto &cl : *cls_container)
     {
         for(auto &elem : *cl)
         {
-            cluster_map[elem] = label;
+            cluster_map[elem] = this->generate_label(i);
         }
-        label++;
+        i++;
     }
 
     //free_clusters();

@@ -1,6 +1,9 @@
 #include <unordered_map>
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <filesystem>
+#include <cmath>
 
 #include "data/data.h"
 #include "data/structures/maptor.h"
@@ -12,6 +15,8 @@
 class Print_Result_Table
 {
     private:
+        //static std::string root = std::string("build/out");
+
         static void pad_left(std::string &str, int length, char c)
         {
             int pad_size = length-str.length();
@@ -28,11 +33,12 @@ class Print_Result_Table
             str.append(right_pad, c);
         }
     public:
-        static void print(std::unordered_map<Data*, std::string> result_map)
+        static std::string print(std::unordered_map<Data*, std::string> result_map)
         {
             std::unordered_map<std::string, std::unordered_map<std::string, int>> count_map;
             Maptor<std::string> labels_orig, labels_clus;
             int max_length_orig = 0;
+            int max_count = 0;
 
             for(auto &entry : result_map)
             {
@@ -42,8 +48,15 @@ class Print_Result_Table
                 labels_clus.push_back(label_clus);
                 count_map[label_clus][label_orig]++;
 
+                if(count_map[label_clus][label_orig] > max_count) max_count = count_map[label_clus][label_orig];
                 if(label_orig.length() > max_length_orig) max_length_orig = label_orig.length();
             }
+
+            int num_len = int(ceil(log10(max_count)));
+            if(num_len > max_length_orig) max_length_orig = num_len;
+            std::cout << "num_len" << std::endl;
+
+            std::string out;
 
             // table config
             char pad_char = ' ', vertical_border = '|', horizontal_border = '-';
@@ -59,6 +72,7 @@ class Print_Result_Table
 
             // print column headers
             labels_clus.sort();
+            labels_orig.sort();
 
             line.append("label");
             for(std::string label_orig : labels_orig)
@@ -67,7 +81,8 @@ class Print_Result_Table
                 line += vertical_border;
                 line.append(label_orig);
             }
-            std::cout << line << std::endl;
+            //std::cout << line << std::endl;
+            out += line + '\n';
             line.clear();
 
             // print rows
@@ -84,7 +99,8 @@ class Print_Result_Table
                 }
                 pad_centered(label_clus, first_cell_width, pad_char);
                 line.insert(0, label_clus);
-                std::cout << row_border << '\n' << line << std::endl;
+                //std::cout << row_border << '\n' << line << std::endl;
+                out += row_border + '\n' + line + '\n';
             }
 
             // calculate accuracy
@@ -104,7 +120,24 @@ class Print_Result_Table
                 correct += max;
             }
 
-            std::cout << "\ncorrect: " << float(correct)/total*100 << "%" << std::endl;
+            //std::cout << "\ncorrect: " << float(correct)/total*100 << "%" << std::endl;
+            out += "\ncorrect: " + std::to_string(float(correct)/total*100) + '%';
+            return out;
+        }
+
+        static void write_to_file(std::string &input, std::string file_name)
+        {
+            std::ofstream file(file_name);
+
+            if(file.is_open())
+            {
+                file << input;
+                file.close();
+                std::cout << "done writing file" << std::endl;
+            } else
+            {
+                std::cout << "failed writing file" << std::endl;
+            }
         }
 };
 
