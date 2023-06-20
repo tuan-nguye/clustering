@@ -23,7 +23,7 @@ float Util_Math::magnitude(std::vector<float> &vals)
 
 float Util_Math::scalar_product(std::vector<float> &v1, std::vector<float> &v2)
 {
-    if(v1.size() != v2.size()) throw std::invalid_argument("vectors have different size, can't calculate scalar product");
+    if(v1.size() != v2.size()) throw std::invalid_argument("vectors have different size (" + std::to_string(v1.size()) + ", " + std::to_string(v2.size()) + "), can't calculate scalar product");
     
     float scalar = 0.0f;
 

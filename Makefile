@@ -6,7 +6,7 @@ SRCDIR = ./src
 
 DEFAULT_CPPFLAGS = -I $(SRCDIR)
 EXEC_CPPFLAGS = -Ofast
-DEBUG_CPPFLAGS = -g3
+DEBUG_CPPFLAGS = -g
 CPPFLAGS = $(DEFAULT_CPPFLAGS) $(EXEC_CPPFLAGS)
 
 # commands
@@ -15,6 +15,9 @@ GDB = gdb
 
 # list of all cpp files in src directory
 CPP_SOURCES = $(call rwildcard, $(SRCDIR), *.cpp)
+
+# list of all header files in src directory
+HEADERS = $(call rwildcard, $(SRCDIR), *.h)
 
 # names of subdirectories with source files
 VPATH = $(sort $(dir $(CPP_SOURCES)))

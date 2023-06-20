@@ -13,6 +13,7 @@ extern int num_threads;
 
 std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*> input, float dist)
 {
+    double score = 0;
     cmp_count = 0;
     Time timer;
     timer.start();
@@ -21,6 +22,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     // clear cls_container
     for(Data *d : input) cls_container->add_data(d);
     cls_container->init_clusters_fine_grained();
+    (*cls_container)[0]->to_string();
     std::cout << "time to build container structure: " << timer.stop() << std::endl;
 
     Cache cache;
@@ -63,12 +65,14 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
 
         // if the score is worse then stop
         if(std::get<0>(top) >= 0) break;
-
+        else score += std::get<0>(top);
+        
         //std::cout << "join: " << std::get<1>(top)->to_string() << " - " << std::get<2>(top)->to_string() << std::endl;
         join_clusters(top, cache, cls_container);
     }
 
     std::cout << "cmp_count: " << cmp_count << std::endl;
+    std::cout << "score: " << score << std::endl;
 
     std::unordered_map<Data*, std::string> cluster_map;
     int i = 0;

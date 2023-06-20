@@ -14,6 +14,7 @@ template<typename T> class Graph
     private:
         std::unordered_map<T, Node<T>*> node_map;
         Maptor<T> elements;
+        long long edge_count = 0;
     protected:
         Node<T>* get_node(T &t)
         {
@@ -33,16 +34,14 @@ template<typename T> class Graph
             elements.push_back(t);
         }
 
-        void remove_node(T &t)
+        virtual void remove_node(T &t)
         {
             Node<T> *node = get_node(t);
-            std::vector<Node<T>*> &children = node->get_children();
+            std::vector<Node<T>*> children(node->get_children());
             
-            auto it = children.begin();
-            while(it != children.end())
+            for(Node<T> *c : children)
             {
-                (*it)->remove_child(node);
-                it = children.erase(it);
+                remove_edge(t, c->get_value());
             }
 
             elements.erase(t);
@@ -50,47 +49,49 @@ template<typename T> class Graph
             delete node;
         }
 
-        bool find(T &t)
+        virtual bool find(T &t)
         {
             return elements.find(t);
         }
 
-        void add_edge(T &t1, T &t2)
+        virtual void add_edge(T &t1, T &t2)
+        {
+            add_edge_directed(t1, t2);
+            add_edge_directed(t2, t1);
+        }
+
+        virtual void add_edge_directed(T &t1, T &t2)
         {
             Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
             n1->add_child(n2);
-            n2->add_child(n1);
+            edge_count++;
         }
 
-        void add_edge_directed(T &t1, T &t2)
+        virtual void remove_edge(T &t1, T &t2)
         {
-            Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
-            n1->add_child(n2);
+            remove_edge_directed(t1, t2);
+            remove_edge_directed(t2, t1);
         }
 
-        void remove_edge(T &t1, T &t2)
-        {
-            Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
-            n1->remove_child(n2);
-            n2->remove_child(n1);
-        }
-
-        void remove_edge_directed(T &t1, T &t2)
+        virtual void remove_edge_directed(T &t1, T &t2)
         {
             Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
             n1->remove_child(n2);
+            edge_count--;
         }
 
-        void get_children(std::vector<T>& vec, T &t)
+        virtual void get_children(std::vector<T>& vec, T &t)
         {
             std::vector<Node<T>*>& children = get_node(t)->get_children();
             vec.reserve(children.size());
             for(Node<T> *c : children) vec.push_back(c->get_value());
         }
 
-        int size() { return elements.size(); }
+        virtual int size() { return elements.size(); }
 
-        Maptor<T>& get_all_elements()
+        virtual long long size_edges() { return edge_count; }
+
+        virtual Maptor<T>& get_all_elements()
         {
             return elements;
         }

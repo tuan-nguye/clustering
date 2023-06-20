@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <tuple>
 #include <iostream>
+#include <stdexcept>
 
 #include "data/graph/node.h"
 
@@ -33,11 +34,33 @@ template <typename T> class Sorted_Node: public Node<T>
                 if(tm == t) return m;
 
                 float val_m = cmp(node_val, tm, d);
-                if(val_m < target_val) l = m+1;
-                else r = m-1;
+                if(val_m == target_val)
+                {
+                    int idx_lin = linear_search(t);
+                    return idx_lin != children.size() ? idx_lin : m;
+                } else if(val_m < target_val)
+                {
+                    l = m+1;
+                } else
+                {
+                    r = m-1;
+                }
+            }
+            
+            return l;
+        }
+
+        int linear_search(T &t)
+        {
+            int idx = 0;
+
+            while(idx < children.size())
+            {
+                if(children[idx]->get_value() == t) break;
+                idx++;
             }
 
-            return l;
+            return idx;
         }
     public:
         Sorted_Node(T t, float (*cmp)(T &t1, T &t2, float), float d): Node<T>(t), cmp(cmp), d(d) {}
@@ -49,8 +72,10 @@ template <typename T> class Sorted_Node: public Node<T>
 
         void remove_child(Node<T> *n)
         {
+            int k_before = children.size();
             T &t = n->get_value();
             int idx = binary_search(t);
+            //int idx = linear_search(t);
             if(idx == children.size() || children[idx] != n) return;
             children.erase(children.begin()+idx);
         }

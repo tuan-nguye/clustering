@@ -71,15 +71,12 @@ template<typename T> class Maptor
         {
             if(!find(elem)) return false;
             int idx = idx_map[elem];
-            idx_map.erase(elem);
             T &last = element_vec.back();
-            if(last != elem)
-            {
-                element_vec[idx] = last;
-                idx_map[last] = idx;
-            }
+            element_vec[idx] = last;
+            idx_map[last] = idx;
             element_vec.pop_back();
-            if(element_vec.size() != idx_map.size()) throw std::invalid_argument("maptor have different size");
+            idx_map.erase(elem);
+            if(element_vec.size() != idx_map.size()) throw std::invalid_argument("maptor");
             return true;
         }
 
@@ -87,14 +84,11 @@ template<typename T> class Maptor
         {
             if(!find(elem)) return false;
             int idx = idx_map[elem];
-            idx_map.erase(elem);
             T &last = element_vec.back();
-            if(last != elem)
-            {
-                element_vec[idx] = last;
-                idx_map[last] = idx;
-            }
+            element_vec[idx] = last;
+            idx_map[last] = idx;
             element_vec.pop_back();
+            idx_map.erase(elem);
             return true;
         }
 
