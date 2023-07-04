@@ -26,7 +26,8 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     std::cout << "time to build container structure: " << timer.stop() << std::endl;
 
     Cache cache;
-    cache.to_update.insert(cache.to_update.end(), cls_container->begin(), cls_container->end());
+    cache.to_init.insert(cache.to_init.end(), cls_container->begin(), cls_container->end());
+    this->init_cache(cache, cls_container);
 
     while(1)
     {
@@ -89,30 +90,30 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     return cluster_map;
 }
 
-void Greedy_Joining::update_cache(Cache &cache, Cluster_Container *cls_container)
+void Greedy_Joining::init_cache(Cache &cache, Cluster_Container *cls_container)
 {
     if(parallel_enabled)
     {
-        if(cache.to_update.size() == 1) update_cache_operation(cache, cls_container, nullptr, cache.to_update[0]);
-        else update_cache_parallel(cache, cls_container);
+        if(cache.to_init.size() == 1) init_cache_operation(cache, cls_container, nullptr, cache.to_init[0]);
+        else init_cache_parallel(cache, cls_container);
     } else
     {
-        update_cache_single(cache, cls_container);
+        init_cache_single(cache, cls_container);
     }
     
 }
 
-void Greedy_Joining::update_cache_single(Cache &cache, Cluster_Container *cls_container)
+void Greedy_Joining::init_cache_single(Cache &cache, Cluster_Container *cls_container)
 {
-    for(Cluster *cl1 : cache.to_update)
+    for(Cluster *cl1 : cache.to_init)
     {
-        update_cache_operation(cache, cls_container, nullptr, cl1);
+        init_cache_operation(cache, cls_container, nullptr, cl1);
     }
 }
 
-void Greedy_Joining::update_cache_parallel(Cache &cache, Cluster_Container *cls_container)
+void Greedy_Joining::init_cache_parallel(Cache &cache, Cluster_Container *cls_container)
 {
-    int size = cache.to_update.size();
+    int size = cache.to_init.size();
     std::mutex mtx;
     std::vector<std::thread> threads;
 
@@ -121,7 +122,7 @@ void Greedy_Joining::update_cache_parallel(Cache &cache, Cluster_Container *cls_
         int start = i*size/num_threads;
         int end = (i+1)*size/num_threads;
         if(start == end) continue;
-        threads.emplace_back(&Greedy_Joining::update_cache_parallel_thread, this, std::ref(cache), std::ref(cls_container), &mtx, start, end);
+        threads.emplace_back(&Greedy_Joining::init_cache_parallel_thread, this, std::ref(cache), std::ref(cls_container), &mtx, start, end);
     }
 
     for(std::thread &thread : threads)
@@ -130,16 +131,16 @@ void Greedy_Joining::update_cache_parallel(Cache &cache, Cluster_Container *cls_
     }
 }
 
-void Greedy_Joining::update_cache_parallel_thread(Cache &cache, Cluster_Container *cls_container, std::mutex *mtx, int start, int end)
+void Greedy_Joining::init_cache_parallel_thread(Cache &cache, Cluster_Container *cls_container, std::mutex *mtx, int start, int end)
 {
     for(int i = start; i < end; i++)
     {
-        Cluster *cl1 = cache.to_update[i];
-        update_cache_operation(cache, cls_container, mtx, cl1);
+        Cluster *cl1 = cache.to_init[i];
+        init_cache_operation(cache, cls_container, mtx, cl1);
     }
 }
 
-void Greedy_Joining::update_cache_operation(Cache &cache, Cluster_Container *cls_container, std::mutex *mtx, Cluster *cl1)
+void Greedy_Joining::init_cache_operation(Cache &cache, Cluster_Container *cls_container, std::mutex *mtx, Cluster *cl1)
 {
     float cl1_size = cl1->size();
     //std::cout << i++ << std::endl;
@@ -169,6 +170,21 @@ void Greedy_Joining::update_cache_operation(Cache &cache, Cluster_Container *cls
         }
     }
     //std::cout << std::endl;
+}
+
+void Greedy_Joining::update_cache(Cache &cache, Cluster_Container *cls_container)
+{
+    for(std::pair<Cluster*, Cluster*> &p : cache.to_update)
+    {
+        Cluster *cl1 = std::get<0>(p), *cl2 = std::get<1>(p);
+        float score_diff = Util_Cluster::score_diff(cl1, cl2, distance);
+        cmp_count++;
+        
+        if(score_diff < 0)
+        {
+            cache.pq.emplace(score_diff, cl1, cl2);
+        }
+    }
 }
 
 void Greedy_Joining::best_pair_iterate(Edge &best, Cluster_Container *cls_container)
@@ -268,13 +284,14 @@ Edge Greedy_Joining::get_next_pair_iterate(Cluster_Container *cls_container)
 void Greedy_Joining::join_clusters(Edge &e, Cache &cache, Cluster_Container *cls_container)
 {
     Cluster *cl1 = std::get<1>(e), *cl2 = std::get<2>(e);
-    Cluster *cl_joined = cls_container->join(cl1, cl2);
+    cache.to_update.clear();
+    Cluster *cl_joined = cls_container->join(cl1, cl2, cache.to_update);
 
     if(cache_enabled)
     {
         cache.invalid.insert(cl1);
         cache.invalid.insert(cl2);
-        cache.to_update.clear();
-        cache.to_update.push_back(cl_joined);
+        cache.to_init.clear();
+        //cache.to_init.push_back(cl_joined);
     }
 }

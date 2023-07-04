@@ -53,7 +53,7 @@ template<typename T> class Sorted_Vector
         }
 
     public:
-        Sorted_Vector(std::function<float(T&, T&)> &func): cmp(func) {}
+        Sorted_Vector(std::function<float(T&, T&)> func): cmp(func) {}
 
         void push(T &t)
         {
@@ -76,6 +76,27 @@ template<typename T> class Sorted_Vector
             vector.erase(vector.begin()+idx);
         }
 
+        void erase_back()
+        {
+            if(size() == 0) return;
+            vector.erase(vector.end()-1);
+        }
+
+        bool contains(T &t)
+        {
+            return linear_search(t) != size();
+        }
+        
+        bool contains(T &&t)
+        {
+            return linear_search(t) != size();
+        }
+
+        T& front()
+        {
+            return vector.fron();
+        }
+
         T& back()
         {
             return vector.back();
@@ -85,6 +106,13 @@ template<typename T> class Sorted_Vector
         {
             return vector.size();
         }
+
+        void clear()
+        {
+            vector.clear();
+        }
+
+        std::vector<T>& get_vector() { return vector; }
 
         typename std::vector<T>::iterator begin() { return vector.begin(); }
         typename std::vector<T>::iterator end() { return vector.end(); }

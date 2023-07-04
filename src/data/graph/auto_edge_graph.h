@@ -44,7 +44,7 @@ template<typename T> class Auto_Edge_Graph: protected Graph<T>
     protected:
         virtual void add_edge_on_condition(T &t1, T &t2, std::mutex &mtx) = 0;
     public:        
-        virtual void combine_nodes_into(T &c, T &t1, T &t2) = 0;
+        virtual void combine_nodes_into(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update) = 0;
 
         void add_node(T &t)
         {
@@ -65,6 +65,11 @@ template<typename T> class Auto_Edge_Graph: protected Graph<T>
         void get_children(std::vector<T> &vec, T &t)
         {
             Graph<T>::get_children(vec, t);
+        }
+
+        virtual void get_neighbours(std::vector<T> &vec, T &t)
+        {
+            Graph<T>::get_neighbours(vec, t);
         }
 
         int size() { return Graph<T>::size(); }

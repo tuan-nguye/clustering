@@ -8,7 +8,7 @@ int Cluster_Vector::size()
 }
 
 // modifiers
-Cluster* Cluster_Vector::join(Cluster *cl1, Cluster *cl2)
+Cluster* Cluster_Vector::join(Cluster *cl1, Cluster *cl2, std::vector<std::pair<Cluster*, Cluster*>> &to_update)
 {
     Cluster* joined = Util_Cluster::join(cl1, cl2, this->get_d());
     clusters.push_back(joined);
@@ -16,6 +16,8 @@ Cluster* Cluster_Vector::join(Cluster *cl1, Cluster *cl2)
     cl2->clear();
     clusters.erase(cl1);
     clusters.erase(cl2);
+    to_update.reserve(clusters.size());
+    for(Cluster *cl : clusters) if(cl != joined) to_update.emplace_back(joined, cl);
     return joined;
 }
 

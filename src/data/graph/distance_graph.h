@@ -33,7 +33,7 @@ template<typename T> class Distance_Graph: public Auto_Edge_Graph<T>
         also remove reference to node by removing edge
         before removing the node, otherwise segfault
         */
-        void combine_nodes_into(T &c, T &t1, T &t2)
+        void combine_nodes_into(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
         {
             Graph<T>::add_node(c);
             Node<T> *n1 = this->get_node(t1), *n2 = this->get_node(t2);
@@ -53,6 +53,7 @@ template<typename T> class Distance_Graph: public Auto_Edge_Graph<T>
             for(Node<T> *next : updated_children)
             {
                 this->add_edge(c, next->get_value());
+                to_update.emplace_back(c, next->get_value());
             }
 
             this->remove_node(t1);

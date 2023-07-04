@@ -1,8 +1,8 @@
 #include "data/cluster.h"
 #include "util/util_math.h"
 
-#ifndef __util_cluster__
-#define __util_cluster__
+#ifndef __util_cluster_include__
+#define __util_cluster_include__
 
 class Util_Cluster
 {

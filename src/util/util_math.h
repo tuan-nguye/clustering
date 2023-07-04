@@ -1,7 +1,7 @@
 #include <vector>
 
-#ifndef __util_include__
-#define __util_include__
+#ifndef __util_math_include__
+#define __util_math_include__
 
 class Util_Math
 {

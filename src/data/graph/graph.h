@@ -80,11 +80,20 @@ template<typename T> class Graph
             edge_count--;
         }
 
+        // get children of the node
         virtual void get_children(std::vector<T>& vec, T &t)
         {
             std::vector<Node<T>*>& children = get_node(t)->get_children();
             vec.reserve(children.size());
             for(Node<T> *c : children) vec.push_back(c->get_value());
+        }
+
+        // get neigbhours of the node
+        // no difference in bidirectional graph
+        // in directional returns all nodes connected to it
+        virtual void get_neighbours(std::vector<T> &vec, T &t)
+        {
+            get_children(vec, t);
         }
 
         virtual int size() { return elements.size(); }

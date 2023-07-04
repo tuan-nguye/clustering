@@ -15,25 +15,25 @@
 template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
 {
     private:
-        float (*cmp)(T&, T&, float);
+        std::function<float(T&, T&)> cmp;
+        
         float dist;
         int k;
-        std::unordered_map<Node<T>*, std::unordered_set<Node<T>*>> incoming;
+        std::unordered_map<T, std::unordered_set<T>> incoming;
 
         // add edge from t1 -> t2
         void add_edge_limit_k(T &t1, T &t2)
         {
-            Node<T> *n1 = this->get_node(t1), *n2 = this->get_node(t2);
-            std::vector<Node<T>*> &children1 = n1->get_children();
+            std::vector<T> children1;
+            this->get_children(children1, t1);
             
             if(children1.size() < k)
             {
                 this->add_edge_directed(t1, t2);
             } else
             {
-                Node<T> *last = children1.back();
-                T &tl = last->get_value();
-                if(cmp(t1, t2, dist) < cmp(t1, tl, dist))
+                T &tl = children1.back();
+                if(cmp(t1, t2) < cmp(t1, tl))
                 {
                     this->remove_edge_directed(t1, tl);
                     this->add_edge_directed(t1, t2);
@@ -42,59 +42,19 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             //std::cout << "k = " << children1.size() << std::endl;
         }
 
-        void update_outgoing_edges()
+        void add_edge_limit_k_and_update(T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
         {
-
-        }
-
-        void update_incoming_edges()
-        {
-
-        }
-    protected:
-        Node<T>* create_node(T &t)
-        {
-            return new Sorted_Node<T>(t, cmp, dist);
-        }
-
-        void add_edge_on_condition(T &t1, T &t2, std::mutex &mtx)
-        {
-            // calculate score_diff, add when better than last element
-            // if added, then cut size of children to k
-            std::lock_guard<std::mutex> lock(mtx);
             add_edge_limit_k(t1, t2);
-            add_edge_limit_k(t2, t1);
+            to_update.emplace_back(t1, t2);
         }
-    public:
-        KNN_Graph(int k, float distance, float(*comparator)(T&, T&, float)): k(k), dist(distance), cmp(comparator) {}
 
-        // 1. create new joined node
-        // 2. iterate through all outgoing neighbours of t1, t2
-        //    and add if c is <= b_limit
-        // 3. if size is less than k, iterate through all nodes
-        //    to find the rest
-        // 4. iterate through all incoming neighbours of t1, t2,
-        //    both will be deleted so replace them
-        //    if possible add c, if not then iterate through all
-        //    to find the one to replace it with
-
-        void combine_nodes_into(T &c, T &t1, T &t2)
+        void update_outgoing_edges(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
         {
-            /*
-            std::cout << "\nincoming" << std::endl;
-            for(auto &e : incoming)
-            {
-                std::cout << e.first->get_value()->to_string() << ", " << e.second.size() << "children: ";
-                for(Node<T> *n : e.second) std::cout << n->get_value()->to_string() << ", ";
-                std::cout << std::endl;
-            }
-            */
-
-            Graph<T>::add_node(c);
-            Node<T> *nc = Graph<T>::get_node(c);
-            Node<T> *n1 = this->get_node(t1), *n2 = this->get_node(t2);
+            std::vector<T> children1, children2;
+            this->get_children(children1, t1);
+            this->get_children(children2, t2);
             Maptor<T> outgoing;
-            float b_limit = cmp(t1, n1->get_children().back()->get_value(), dist) + cmp(t2, n2->get_children().back()->get_value(), dist);
+            float b_limit = cmp(t1, children1.back()) + cmp(t2, children2.back());
             /*
             std::cout << "join: t1 = " << t1->to_string() << " and t2 = " << t2->to_string() << std::endl;
             std::vector<T> inc1, inc2;
@@ -116,21 +76,21 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
 
             // outgoing
 
-            for(Node<T> *next1 : n1->get_children())
+            for(T &tn1 : children1)
             {
-                T &t = next1->get_value();
-                incoming[next1].erase(n1);
-                if(next1 == n2 || cmp(c, t, dist) > b_limit) continue;
-                outgoing.push_back(t);
+                incoming[tn1].erase(t1);
+                if(cmp(c, tn1) > b_limit) continue;
+                outgoing.push_back(tn1);
             }
 
-            for(Node<T> *next2 : n2->get_children())
+            for(T &tn2 : children2)
             {
-                T &t = next2->get_value();
-                incoming[next2].erase(n2);
-                if(next2 == n1 || cmp(c, t, dist) > b_limit) continue;
-                outgoing.push_back(t);
+                incoming[tn2].erase(t2);
+                if(cmp(c, tn2) > b_limit) continue;
+                outgoing.push_back(tn2);
             }
+            outgoing.erase(t1);
+            outgoing.erase(t2);
             /*
             std::cout << "outgoing union\n";
             for(T &t : outgoing) std::cout << t->to_string() << ", ";
@@ -138,139 +98,218 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             */
             if(outgoing.size() >= k)
             {
-                for(T &t : outgoing) this->add_edge_limit_k(c, t);
+                for(T &t : outgoing) this->add_edge_limit_k_and_update(c, t, to_update);
             } else
             {
-                for(T &t : this->get_all_elements()) if(t != c && t != t1 && t != t2) this->add_edge_limit_k(c, t);
+                std::unordered_set<T> exclude = {c, t1, t2};
+                std::vector<T> top_k_elements;
+                this->top_k(k, c, exclude, top_k_elements);
+                for(T &t : top_k_elements)
+                    this->add_edge_limit_k_and_update(c, t, to_update);
+                /*
+                for(T &t : this->get_all_elements())
+                    if(exclude.count(t) == 0)
+                        this->add_edge_limit_k_and_update(c, t, to_update);*/
             }
+        }
+
+        void update_incoming_edges(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
+        {
+            std::unordered_set<T> excluded_values = {c, t1, t2};
+            replace_incoming_edges(t1, c, excluded_values, to_update);
+            replace_incoming_edges(t2, c, excluded_values, to_update);
+        }
+
+        void replace_incoming_edges(T &t, T &c, std::unordered_set<T> &excluded_values, std::vector<std::pair<T, T>> &to_update)
+        {
+            std::vector<T> inc_vec(incoming[t].begin(), incoming[t].end());
+            for(T &tn : inc_vec)
+            {
+                std::vector<T> children;
+                this->get_children(children, tn);
+                if(children.size() == 0) continue;
+                T &last = children.back();
+                this->remove_edge_directed(tn, t);
+                //if(excluded_values.count(n->get_value()) != 0) continue;
+
+                if(cmp(tn, c) <= cmp(tn, last) && std::find(children.begin(), children.end(), c) == children.end())
+                {
+                    this->add_edge_limit_k_and_update(tn, c, to_update);
+                } else
+                {
+                    std::unordered_set<T> exclude(excluded_values.begin(), excluded_values.end());
+                    for(T &tcc : children) exclude.insert(tcc);
+                    exclude.insert(tn);
+                    /*
+                    for(T &tnn : this->get_all_elements())
+                        if(exclude.find(tnn) == exclude.end())
+                            add_edge_limit_k_and_update(tn, tnn, to_update);
+                    */
+                    std::vector<T> top1;
+                    top_k(1, tn, exclude, top1);
+                    if(top1.size() != 0) this->add_edge_limit_k_and_update(tn, top1[0], to_update);
+                }
+            }
+        }
+
+        void top_k(int k, T &t, std::unordered_set<T> exclude, std::vector<T> &top_elements)
+        {
+            auto cmp_captured = cmp;
+            auto compare = [&t, cmp_captured](T &t1, T &t2) -> float
+            {
+                return cmp_captured(t, t1) - cmp_captured(t, t2);
+            };
+            Sorted_Vector<T> top_kek(compare);
+
+            for(T &tn : this->get_all_elements())
+            {
+                if(exclude.count(tn) != 0) continue;
+                if(top_kek.size() < k)
+                {
+                    top_kek.push(tn);
+                } else
+                {
+                    T &last = top_kek.back();
+                    if(cmp(t, tn) < cmp(t, last))
+                    {
+                        top_kek.erase_back();
+                        top_kek.push(tn);
+                    }
+                }
+            }
+
+            top_elements.reserve(k);
+            for(T &tn : top_kek)
+            {
+                top_elements.push_back(tn);
+            }
+            //std::cout << "k: " << k << ", actual: " << top_elements.size() << std::endl;
+        }
+
+    protected:
+        Node<T>* create_node(T &t)
+        {
+            return new Sorted_Node<T>(t, cmp);
+        }
+
+        void add_edge_on_condition(T &t1, T &t2, std::mutex &mtx)
+        {
+            // calculate score_diff, add when better than last element
+            // if added, then cut size of children to k
+            std::lock_guard<std::mutex> lock(mtx);
+            add_edge_limit_k(t1, t2);
+            add_edge_limit_k(t2, t1);
+        }
+    public:
+        KNN_Graph(int k, std::function<float(T&, T&)> cmp): k(k), cmp(cmp) {}
+
+        // 1. create new joined node
+        // 2. iterate through all outgoing neighbours of t1, t2
+        //    and add if c is <= b_limit
+        // 3. if size is less than k, iterate through all nodes
+        //    to find the rest
+        // 4. iterate through all incoming neighbours of t1, t2,
+        //    both will be deleted so replace them
+        //    if possible add c, if not then iterate through all
+        //    to find the one to replace it with
+
+        void combine_nodes_into(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
+        {
+            /*
+            std::cout << "\nincoming" << std::endl;
+            for(auto &e : incoming)
+            {
+                std::cout << e.first->get_value()->to_string() << ", " << e.second.size() << "children: ";
+                for(Node<T> *n : e.second) std::cout << n->get_value()->to_string() << ", ";
+                std::cout << std::endl;
+            }
+            */
+
+            Graph<T>::add_node(c);
+            update_outgoing_edges(c, t1, t2, to_update);
 
             //std::cout << "joined children: " << nc->get_children().size() << std::endl;
             // incoming
-
+            update_incoming_edges(c, t1, t2, to_update);
             
-            std::vector<Node<T>*> inc1_vec(incoming[n1].begin(), incoming[n1].end());
-            for(Node<T> *n : inc1_vec)
-            {
-                if(n->get_children().size() == 0) continue;
-                Node<T> *last = n->get_children().back();
-                this->remove_edge_directed(n->get_value(), t1);
-                if(n == n1 || n == n2 || n->get_value() == c) continue;
-                
-                if(cmp(n->get_value(), c, dist) <= cmp(n->get_value(), last->get_value(), dist) && !n->contains_child(nc))
-                {
-                    this->add_edge_limit_k(n->get_value(), c);
-                } else
-                {
-                    Maptor<T> potential_children;
-                    for(T &tnn : this->get_all_elements()) potential_children.push_back(tnn);
-                    for(Node<T> *ncc : n->get_children())
-                    {
-                        potential_children.erase(ncc->get_value());
-                    }
-                    potential_children.erase(n->get_value());
-                    potential_children.erase(t1);
-                    potential_children.erase(t2);
-                    potential_children.erase(c);
-                    for(T tnn : potential_children) add_edge_limit_k(n->get_value(), tnn);
-                }
-            }
-
             
-            std::vector<Node<T>*> inc2_vec(incoming[n2].begin(), incoming[n2].end());
-            for(Node<T> *n : inc2_vec)
-            {
-                if(n->get_children().size() == 0) continue;
-                Node<T> *last = n->get_children().back();
-                this->remove_edge_directed(n->get_value(), t2);
-                if(n == n1 || n == n2 || n->get_value() == c) continue;
-
-                if(cmp(n->get_value(), c, dist) <= cmp(n->get_value(), last->get_value(), dist) && !n->contains_child(nc))
-                {
-                    this->add_edge_limit_k(n->get_value(), c);
-                } else
-                {
-                    Maptor<T> potential_children;
-                    for(T &tnn : this->get_all_elements()) potential_children.push_back(tnn);
-                    for(Node<T> *ncc : n->get_children())
-                    {
-                        potential_children.erase(ncc->get_value());
-                    }
-                    potential_children.erase(n->get_value());
-                    potential_children.erase(t1);
-                    potential_children.erase(t2);
-                    potential_children.erase(c);
-                    for(T tnn : potential_children) add_edge_limit_k(n->get_value(), tnn);
-                }
-            }
             
             this->remove_edge(t1, t2);
             this->remove_node(t1);
             this->remove_node(t2);
             
-            std::cout << "match: " << this->match_in_out() << std::endl;
-            std::cout << "gone:\nt1 = " << gone(t1) << "\nt2 = " << gone(t2) << std::endl;
+            //std::cout << "match: " << this->match_in_out() << std::endl;
+            //std::cout << "gone:\nt1 = " << gone(t1) << "\nt2 = " << gone(t2) << std::endl;
         }
 
         // override base function to update incoming map
         void remove_node(T &t)
         {
-            incoming.erase(this->get_node(t));
+            incoming.erase(t);
             Graph<T>::remove_node(t);
         }
 
         // override base function to update incoming map
         void add_edge_directed(T &t1, T &t2)
         {
-            incoming[this->get_node(t2)].insert(this->get_node(t1));
+            incoming[t2].insert(t1);
             Graph<T>::add_edge_directed(t1, t2);
         }
 
         // override base function to update incoming map
         void remove_edge_directed(T &t1, T &t2)
         {
-            if(incoming.find(this->get_node(t2)) != incoming.end()) incoming[this->get_node(t2)].erase(this->get_node(t1));
+            if(incoming.find(t2) != incoming.end()) incoming[t2].erase(t1);
             Graph<T>::remove_edge_directed(t1, t2);
+        }
+
+        void get_neighbours(std::vector<T> &vec, T &t)
+        {
+            this->get_children(vec, t);
+            
         }
 
         bool match_in_out()
         {
-            std::unordered_map<Node<T>*, std::vector<Node<T>*>> check;
+            std::unordered_map<T, std::unordered_set<T>> check;
+            std::vector<T> children;
+
             for(T &t : this->get_all_elements())
             {
-                Node<T> *n = this->get_node(t);
-                for(Node<T> *nn : n->get_children())
+                children.clear();
+                this->get_children(children, t);
+                for(T &tc : children)
                 {
-                    check[nn].push_back(n);
+                    check[tc].insert(t);
                 }
             }
 
             for(T &t : this->get_all_elements())
             {
-                Node<T> *n = this->get_node(t);
-                auto &children_check = check[n], &children_inc = incoming[n];
+                std::unordered_set<T> &children_check = check[t], &children_inc = incoming[t];
                 if(children_check.size() != children_inc.size())
                 {
                     std::cerr << "size doesn't match (check, inc) = (" + std::to_string(children_check.size()) + ", " + std::to_string(children_inc.size()) + "): ";
-                    std::cerr << n->get_value()->to_string() << "\nchildren_check: ";
-                    for(Node<T> *nc : children_check) std::cerr << nc->get_value()->to_string() << ", ";
+                    std::cerr << t->to_string() << "\nchildren_check: ";
+                    for(T tc : children_check) std::cerr << tc->to_string() << ", ";
                     std::cerr << "\nchildren_inc: ";
-                    for(Node<T> *nc : children_inc) std::cerr << nc->get_value()->to_string() << ", ";
+                    for(T tc : children_inc) std::cerr << tc->to_string() << ", ";
                     std::cerr << std::endl;
                     throw std::invalid_argument("");
                     return false;
                 }
 
-                Maptor<Node<T>*> diff;
-                for(Node<T> *n : children_check) diff.push_back(n);
-                for(Node<T> *n : children_inc) diff.erase(n);
+                Maptor<T> diff;
+                for(T t : children_check) diff.push_back(t);
+                for(T t : children_inc) diff.erase(t);
                 
                 if(diff.size() != 0)
                 {
                     std::cerr << "elements don't match: ";
-                    std::cerr << n->get_value()->to_string() << "\nchildren_check: ";
-                    for(Node<T> *nc : children_check) std::cerr << nc->get_value()->to_string() << ", ";
+                    std::cerr << t->to_string() << "\nchildren_check: ";
+                    for(T t : children_check) std::cerr << t->to_string() << ", ";
                     std::cerr << "\nchildren_inc";
-                    for(Node<T> *nc : children_inc) std::cerr << nc->get_value()->to_string() << ", ";
+                    for(T t : children_inc) std::cerr << t->to_string() << ", ";
                     std::cerr << std::endl;
                     throw std::invalid_argument("");
                     return false;
@@ -283,6 +322,8 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
         bool gone(T &t)
         {
             // check outgoing edges
+            std::vector<T> children;
+
             for(T &tn : this->get_all_elements())
             {
                 if(tn == t)
@@ -290,10 +331,11 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
                     throw std::invalid_argument(t->to_string() + " still exists in outgoing as key");
                     return false;
                 }
-                Node<T> *n = this->get_node(tn);
-                for(Node<T> *nn : n->get_children())
+                
+                this->get_children(children, tn);
+                for(T &tnn : children)
                 {
-                    if(nn->get_value() == t)
+                    if(tnn == t)
                     {
                         throw std::invalid_argument(t->to_string() + " still exists in outgoing as child");
                         return false;
@@ -304,16 +346,16 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             // check incoming edges
             for(auto &e : incoming)
             {
-                Node<T> *n = e.first;
-                if(n->get_value() == t)
+                T tn = e.first;
+                if(tn == t)
                 {
                     throw std::invalid_argument(t->to_string() + " still exists in incoming as key");
                     return false;
                 }
 
-                for(Node<T> *nn : e.second)
+                for(T tnn : e.second)
                 {
-                    if(nn->get_value() == t)
+                    if(tnn == t)
                     {
                         throw std::invalid_argument(t->to_string() + " still exists in incoming as child");
                         return false;

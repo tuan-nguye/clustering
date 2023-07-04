@@ -14,7 +14,7 @@ class Cluster_Vector: public Cluster_Container
         int size();
 
         // modifiers
-        Cluster* join(Cluster *cl1, Cluster *cl2);
+        Cluster* join(Cluster *cl1, Cluster *cl2, std::vector<std::pair<Cluster*, Cluster*>> &to_update);
         // void move(); // move operation TODO
 
         // initialize clusters given the data

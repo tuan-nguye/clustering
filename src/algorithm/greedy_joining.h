@@ -63,16 +63,20 @@ class Greedy_Joining: public Clustering
         {
             MinPriorityQueue pq;
             std::unordered_set<Cluster*> invalid;
-            std::vector<Cluster*> to_update;
+            std::vector<Cluster*> to_init;
+            std::vector<std::pair<Cluster*, Cluster*>> to_update;
         };
 
 
         // functions updating cache with new values
+        // init_cache for initializing the cache with values when its empty
+        void init_cache(Cache &cache, Cluster_Container *cls_container);
+        void init_cache_single(Cache &cache, Cluster_Container *cls_container);
+        void init_cache_parallel(Cache &cache, Cluster_Container *cls_container);
+        void init_cache_parallel_thread(Cache &cache, Cluster_Container *cls_container, std::mutex *mtx, int start, int end);
+        void init_cache_operation(Cache &cache, Cluster_Container *cls_container, std::mutex *mtx, Cluster *cl1);
+        // update cache after joining two nodes
         void update_cache(Cache &cache, Cluster_Container *cls_container);
-        void update_cache_single(Cache &cache, Cluster_Container *cls_container);
-        void update_cache_parallel(Cache &cache, Cluster_Container *cls_container);
-        void update_cache_parallel_thread(Cache &cache, Cluster_Container *cls_container, std::mutex *mtx, int start, int end);
-        void update_cache_operation(Cache &cache, Cluster_Container *cls_container, std::mutex *mtx, Cluster *cl1);
 
         // functions for iterating through all pairs
         void best_pair_iterate(Edge &best, Cluster_Container *cls_container);

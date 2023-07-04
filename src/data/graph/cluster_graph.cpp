@@ -13,10 +13,10 @@ create new cluster which is the union of cl1 and cl2 and
 update graph by making union of their node children
 delete old clusters from heap
 */
-Cluster* Cluster_Graph::join(Cluster *cl1, Cluster *cl2)
+Cluster* Cluster_Graph::join(Cluster *cl1, Cluster *cl2, std::vector<std::pair<Cluster*, Cluster*>> &to_update)
 {
     Cluster *combined = Util_Cluster::join(cl1, cl2, this->get_d());
-    ae_graph->combine_nodes_into(combined, cl1, cl2);
+    ae_graph->combine_nodes_into(combined, cl1, cl2, to_update);
     cl1->clear();//delete cl1;
     cl2->clear();//delete cl2;
     return combined;
@@ -26,7 +26,7 @@ Cluster* Cluster_Graph::join(Cluster *cl1, Cluster *cl2)
 
 void Cluster_Graph::get_neighbours(std::vector<Cluster*>& vec, Cluster *cl)
 {
-    ae_graph->get_children(vec, cl);
+    ae_graph->get_neighbours(vec, cl);
 }
 
 bool Cluster_Graph::find(Cluster *&cl)

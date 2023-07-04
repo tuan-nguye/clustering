@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <thread>
+#include <functional>
 
 #include "parser/csv_parser.h"
 #include "parser/ubyte_parser.h"
@@ -17,6 +18,7 @@
 #include "data/graph/auto_edge_graph.h"
 #include "data/graph/knn_graph.h"
 #include "data/cluster_vector.h"
+#include "data/structures/sorted_vector.h"
 
 void print_digit_with_label(Data *d)
 {
@@ -81,19 +83,23 @@ int main()
     //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     //parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
     
-    //data.resize(5000);
+    //data.resize(1000);
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm and select cluster data structure
     float d = 1.2f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2000.0
-    int k = 10;
+    int k = 1;
+    std::function<float(Cluster*&, Cluster*&)> cmp = [d](Cluster *&cl1, Cluster *&cl2) -> float
+    {
+        return Util_Cluster::score_diff(cl1, cl2, d);
+    };
     Time timer;
 
     Auto_Edge_Graph<Cluster*> *ae_graph;
     Distance_Graph<Cluster*> dist_graph(d, &Util_Cluster::min_distance);
-    KNN_Graph<Cluster*> knn_graph(k, d, &Util_Cluster::score_diff);
-    //ae_graph = &dist_graph;
-    ae_graph = &knn_graph;
+    KNN_Graph<Cluster*> knn_graph(k, cmp);
+    ae_graph = &dist_graph;
+    //ae_graph = &knn_graph;
     Cluster_Graph cls_graph(d, ae_graph);
     Cluster_Vector cls_vector(d);
 
