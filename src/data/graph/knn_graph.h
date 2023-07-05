@@ -15,10 +15,13 @@
 template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
 {
     private:
+        // comparison function for evaluating distance between two clusters
         std::function<float(T&, T&)> cmp;
-        
+        // distance constant
         float dist;
+        // k constant, number of neighbours
         int k;
+        // map storing all incoming neighbours of a value
         std::unordered_map<T, std::unordered_set<T>> incoming;
 
         // add edge from t1 -> t2
@@ -42,7 +45,7 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             //std::cout << "k = " << children1.size() << std::endl;
         }
 
-        void add_edge_limit_k_and_update(T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
+        virtual void add_edge_limit_k_and_update(T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
         {
             add_edge_limit_k(t1, t2);
             to_update.emplace_back(t1, t2);
@@ -152,6 +155,8 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             }
         }
 
+        // finds the top k elements according to the comparison function
+        // and stores them in top_elements
         void top_k(int k, T &t, std::unordered_set<T> exclude, std::vector<T> &top_elements)
         {
             auto cmp_captured = cmp;
@@ -192,13 +197,26 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             return new Sorted_Node<T>(t, cmp);
         }
 
-        void add_edge_on_condition(T &t1, T &t2, std::mutex &mtx)
+        void add_edges_operation(T &t, std::mutex *mtx)
         {
-            // calculate score_diff, add when better than last element
-            // if added, then cut size of children to k
-            std::lock_guard<std::mutex> lock(mtx);
+            // TODO do this with top_k instead so locks are not needed
+            // for parallel processing, only lock when modifying/adding
+            // the edges
+            /*std::lock_guard<std::mutex> lock(mtx);
             add_edge_limit_k(t1, t2);
-            add_edge_limit_k(t2, t1);
+            add_edge_limit_k(t2, t1);*/
+            std::vector<T> topk;
+            std::unordered_set<T> exclude = {t};
+            top_k(k, t, exclude, topk);
+
+            if(mtx == nullptr) 
+            {
+                for(T &tn : topk) this->add_edge_directed(t, tn);
+            } else
+            {
+                std::lock_guard<std::mutex> lock(*mtx);
+                for(T &tn : topk) this->add_edge_directed(t, tn);
+            }
         }
     public:
         KNN_Graph(int k, std::function<float(T&, T&)> cmp): k(k), cmp(cmp) {}
@@ -225,7 +243,7 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             }
             */
 
-            Graph<T>::add_node(c);
+            this->add_node(c);
             update_outgoing_edges(c, t1, t2, to_update);
 
             //std::cout << "joined children: " << nc->get_children().size() << std::endl;

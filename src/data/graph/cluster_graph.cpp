@@ -37,6 +37,8 @@ bool Cluster_Graph::find(Cluster *&cl)
 void Cluster_Graph::init_clusters_fine_grained()
 {
     float dist = get_d();
+    std::vector<Cluster*> clusters;
+    clusters.reserve(get_data().size());
 
     for(Data *d : get_data())
     {
@@ -44,8 +46,10 @@ void Cluster_Graph::init_clusters_fine_grained()
         cl->push_back(d);
         cl->add_to_sum(*d);
         cl->add_to_sum_of_squares(Util_Math::sum_of_squares(*d));
-        ae_graph->add_node(cl);
+        clusters.push_back(cl);
     }
+
+    ae_graph->set_nodes(clusters);
 }
 
 Cluster** Cluster_Graph::begin()

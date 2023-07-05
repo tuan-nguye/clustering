@@ -16,11 +16,20 @@ template<typename T> class Distance_Graph: public Auto_Edge_Graph<T>
         float dist;
         
     protected:
-        void add_edge_on_condition(T &t1, T &t2, std::mutex &mtx)
+        void add_edges_operation(T &t, std::mutex *mtx)
         {
-            if(cmp(t1, t2) > dist) return;
-            std::lock_guard<std::mutex> lock(mtx);
-            Graph<T>::add_edge(t1, t2);
+            for(T &tn : this->get_all_elements())
+            {
+                if(t == tn || cmp(t, tn) > dist) continue;
+                if(mtx == nullptr)
+                {
+                    Graph<T>::add_edge(t, tn);
+                } else
+                {
+                    std::lock_guard<std::mutex> lock(*mtx);
+                    Graph<T>::add_edge(t, tn);
+                }
+            }
         }
     public:
         Distance_Graph(float distance, float(*comparator)(T&, T&)): dist(distance), cmp(comparator) {}

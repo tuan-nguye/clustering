@@ -76,30 +76,33 @@ int main()
     CSV_Parser csv_parser;
     Ubyte_Parser ubyte_parser;
 
-    parser = &csv_parser;
+    //parser = &csv_parser;
     //parser->parse(data, "./res/test/test_example.data");
-    parser->parse(data, "./res/iris/iris_data.data");
-    //parser = &ubyte_parser;
-    //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
+    //parser->parse(data, "./res/iris/iris_data.data");
+    parser = &ubyte_parser;
+    parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     //parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
     
-    //data.resize(1000);
+    data.resize(5000);
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm and select cluster data structure
-    float d = 1.2f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2000.0
-    int k = 1;
+    float d = 2200.0f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2000.0
+    int k = 5;
     std::function<float(Cluster*&, Cluster*&)> cmp = [d](Cluster *&cl1, Cluster *&cl2) -> float
     {
         return Util_Cluster::score_diff(cl1, cl2, d);
     };
+    bool enable_parallel = true;
+    bool enable_cache = true;
     Time timer;
 
     Auto_Edge_Graph<Cluster*> *ae_graph;
     Distance_Graph<Cluster*> dist_graph(d, &Util_Cluster::min_distance);
     KNN_Graph<Cluster*> knn_graph(k, cmp);
     ae_graph = &dist_graph;
-    //ae_graph = &knn_graph;
+    ae_graph = &knn_graph;
+    ae_graph->set_parallel(enable_parallel);
     Cluster_Graph cls_graph(d, ae_graph);
     Cluster_Vector cls_vector(d);
 
@@ -108,9 +111,9 @@ int main()
     //cls_container = &cls_vector;
 
     Greedy_Joining gr_joining;
-    gr_joining.set_cache(true);
+    gr_joining.set_cache(enable_cache);
     gr_joining.set_container(cls_container);
-    gr_joining.set_parallel(true);
+    gr_joining.set_parallel(enable_parallel);
     Clustering *clustering = &gr_joining;
      /*
     for(Data *d : data) cls_container->add_data(d);
