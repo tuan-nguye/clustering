@@ -5,37 +5,11 @@
 #include "eval/evaluation.h"
 #include "eval/partition-comparison.h"
 
-#ifndef __rand_index_include__
-#define __rand_index_include__
+#ifndef __variation_of_information_include__
+#define __variation_of_information_include__
 
-/*
-iterate through all pairs of elements and count the number
-of pairs that are in the same subset in both labelings
-and pairs that are in different subsets in both labelings
-*/
-class Rand_Index: public Evaluation
+class Variation_Of_Information: public Evaluation
 {
-    private:
-        double deprecated_implementation(std::unordered_map<Data*, std::string> prediction_map)
-        {
-            std::vector<std::pair<Data*, std::string>> entries = get_entry_vector(prediction_map);
-            long long n = entries.size();
-            long long correct = 0;
-
-            for(int i = 0; i < n-1; i++)
-            {
-                for(int j = i+1; j < n; j++)
-                {
-                    bool same1 = entries[i].first->label == entries[j].first->label;
-                    bool same2 = entries[i].second == entries[j].second;
-
-                    if(same1 == same2) correct++;
-                }
-            }
-
-            return double(correct) / ((n*(n-1))/2l);
-        }
-
     public:
         double execute(std::unordered_map<Data*, std::string> prediction_map)
         {
@@ -75,8 +49,8 @@ class Rand_Index: public Evaluation
                 idx++;
             }
 
-            andres::RandError<double> rand_index(truth.begin(), truth.end(), prediction.begin());
-            return rand_index.index();
+            andres::VariationOfInformation<double> variation(truth.begin(), truth.end(), prediction.begin());
+            return variation.value();
         }
 };
 
