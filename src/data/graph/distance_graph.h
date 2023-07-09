@@ -14,13 +14,26 @@ template<typename T> class Distance_Graph: public Auto_Edge_Graph<T>
     private:
         float (*cmp)(T&, T&);
         float dist;
+        std::unordered_set<T> visited;
         
     protected:
         void add_edges_operation(T &t, std::mutex *mtx)
         {
             for(T &tn : this->get_all_elements())
             {
-                if(t == tn || cmp(t, tn) > dist) continue;
+                bool done;
+                if(mtx == nullptr)
+                {
+                    done = visited.count(t) != 0;
+                    visited.insert(t);
+                } else
+                {
+                    std::lock_guard<std::mutex> lock(*mtx);
+                    done = visited.count(t) != 0;
+                    visited.insert(t);
+                }
+
+                if(done || t == tn || cmp(t, tn) > dist) continue;
                 if(mtx == nullptr)
                 {
                     Graph<T>::add_edge(t, tn);
