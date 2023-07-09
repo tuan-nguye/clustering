@@ -8,12 +8,13 @@
 #include "data/cluster_container.h"
 #include "data/cluster_vector.h"
 #include "data/graph/cluster_graph.h"
+#include "data/structures/queue_defs.h"
 
 #ifndef __greedy_joining_include__
 #define __greedy_joining_include__
 
-typedef std::tuple<float, Cluster*, Cluster*> Edge;
-typedef std::priority_queue<Edge, std::vector<Edge>, std::greater<Edge>> MinPriorityQueue;
+//typedef std::tuple<float, Cluster*, Cluster*> Edge;
+//typedef std::priority_queue<Edge, std::vector<Edge>, std::greater<Edge>> MinPriorityQueue;
 
 class Greedy_Joining: public Clustering
 {

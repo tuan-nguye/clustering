@@ -73,7 +73,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     }
 
     std::cout << "cmp_count: " << cmp_count << std::endl;
-    std::cout << "score: " << score << std::endl;
+    this->set_objective_value(score);
 
     std::unordered_map<Data*, std::string> cluster_map;
     int i = 0;

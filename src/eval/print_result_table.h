@@ -54,7 +54,6 @@ class Print_Result_Table
 
             int num_len = int(ceil(log10(max_count)));
             if(num_len > max_length_orig) max_length_orig = num_len;
-            std::cout << "num_len" << std::endl;
 
             std::string out;
 

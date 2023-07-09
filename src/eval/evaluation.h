@@ -16,7 +16,7 @@ class Evaluation
             return entries;
         }
     public:
-        virtual double execute(std::unordered_map<Data*, std::string> map) = 0;
+        virtual double execute(std::unordered_map<Data*, std::string> prediction_map) = 0;
 };
 
 #endif

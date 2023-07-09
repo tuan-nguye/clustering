@@ -24,7 +24,8 @@ class Cluster_Graph: public Cluster_Container
         // initialize clusters given the data
         void init_clusters_fine_grained();
         //void init_clusters_random(); // needed for other algorithms
-        
+        void delete_clusters();
+
         // access functions
         void get_neighbours(std::vector<Cluster*>& vec, Cluster *cl);
         bool find(Cluster *&cl);

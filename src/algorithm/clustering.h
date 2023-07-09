@@ -10,6 +10,10 @@
 
 class Clustering
 {
+    private:
+        double objective_value = 0.0;
+    protected:
+        void set_objective_value(double val) { objective_value = val; }
     public:
         virtual std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d) = 0;
         std::string generate_label(int n)
@@ -24,6 +28,8 @@ class Clustering
 
             return label;
         }
+
+        double get_objective_value() { return objective_value; }
 };
 
 #endif

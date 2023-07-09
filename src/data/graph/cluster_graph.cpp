@@ -31,7 +31,7 @@ void Cluster_Graph::get_neighbours(std::vector<Cluster*>& vec, Cluster *cl)
 
 bool Cluster_Graph::find(Cluster *&cl)
 {
-    return ae_graph->find(cl);
+    return ae_graph->find_node(cl);
 }
 
 void Cluster_Graph::init_clusters_fine_grained()
@@ -50,6 +50,15 @@ void Cluster_Graph::init_clusters_fine_grained()
     }
 
     ae_graph->set_nodes(clusters);
+}
+
+void Cluster_Graph::delete_clusters()
+{
+    for(Cluster *cl : ae_graph->get_all_elements())
+    {
+        delete cl;
+    }
+    ae_graph->clear();
 }
 
 Cluster** Cluster_Graph::begin()

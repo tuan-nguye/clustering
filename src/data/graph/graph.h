@@ -1,6 +1,7 @@
 #include <vector>
 #include <unordered_map>
 #include <iostream>
+#include <stdexcept>
 
 #include "data/graph/node.h"
 #include "data/graph/default_node.h"
@@ -29,6 +30,7 @@ template<typename T> class Graph
     public:
         virtual void add_node(T &t)
         {
+            if(find_node(t)) return;
             Node<T> *node = create_node(t);
             node_map[t] = node;
             elements.push_back(t);
@@ -36,6 +38,7 @@ template<typename T> class Graph
 
         virtual void remove_node(T &t)
         {
+            if(!find_node(t)) return;
             Node<T> *node = get_node(t);
             std::vector<Node<T>*> children(node->get_children());
             
@@ -49,7 +52,7 @@ template<typename T> class Graph
             delete node;
         }
 
-        virtual bool find(T &t)
+        virtual bool find_node(T &t)
         {
             return elements.find(t);
         }
@@ -62,6 +65,7 @@ template<typename T> class Graph
 
         virtual void add_edge_directed(T &t1, T &t2)
         {
+            if(!find_node(t1) || !find_node(t2)) throw std::invalid_argument("t1 or t2 is not a node, can't add edge");
             Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
             n1->add_child(n2);
             edge_count++;
@@ -75,6 +79,8 @@ template<typename T> class Graph
 
         virtual void remove_edge_directed(T &t1, T &t2)
         {
+            if(!find_node(t1)) throw std::invalid_argument("t1 doesn't exist, can't remove edge");
+            else if(!find_node(t2)) return;
             Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
             n1->remove_child(n2);
             edge_count--;
@@ -83,9 +89,28 @@ template<typename T> class Graph
         // get children of the node
         virtual void get_children(std::vector<T>& vec, T &t)
         {
+            if(!find_node(t)) throw std::invalid_argument("t doesn't exist, can't get its children");
             std::vector<Node<T>*>& children = get_node(t)->get_children();
             vec.reserve(children.size());
             for(Node<T> *c : children) vec.push_back(c->get_value());
+        }
+
+        virtual T& last_child(T &t)
+        {
+            if(!find_node(t)) throw std::invalid_argument("t doesn't exist, can't access last child");
+            return get_node(t)->get_children().back()->get_value();
+        }
+
+        virtual void pop_back_child(T &t)
+        {
+            if(!find_node(t)) throw std::invalid_argument("t doesn't exist, can't pop back child");
+            get_node(t)->get_children().pop_back();
+        }
+
+        virtual int number_of_children(T &t)
+        {
+            if(!find_node(t)) throw std::invalid_argument("t doesn't exist, can't return number of children");
+            return get_node(t)->get_children().size();
         }
 
         // get neigbhours of the node
@@ -103,6 +128,16 @@ template<typename T> class Graph
         virtual Maptor<T>& get_all_elements()
         {
             return elements;
+        }
+
+        void clear()
+        {
+            elements.clear();
+            for(auto &e : node_map)
+            {
+                Node<T> *n = e.second;
+                delete n;
+            }
         }
 
 };

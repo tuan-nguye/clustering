@@ -116,6 +116,12 @@ template<typename T> class Maptor
             return idx_map.find(elem) != idx_map.end();
         }
 
+        void clear()
+        {
+            element_vec.clear();
+            idx_map.clear();
+        }
+
         void sort()
         {
             merge_sort(0, size());
@@ -128,6 +134,8 @@ template<typename T> class Maptor
         const T* end() const { return &element_vec[size()]; }
 
         T& operator[] (int idx) { return element_vec[idx]; }
+
+        std::vector<T>& get_vector() { return element_vec; }
 };
 
 #endif

@@ -24,6 +24,9 @@ class Cluster_Container
         virtual void init_clusters_fine_grained() = 0;
         //void init_clusters_random(); // needed for other algorithms
         
+        // delete clusters from heap
+        virtual void delete_clusters() = 0;
+
         // access functions
         virtual void get_neighbours(std::vector<Cluster*>& vec, Cluster *cl) = 0;
         virtual bool find(Cluster *&cl) = 0;
