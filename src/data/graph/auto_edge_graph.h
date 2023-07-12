@@ -118,9 +118,17 @@ template<typename T> class Auto_Edge_Graph: protected Graph<T>
             return Graph<T>::get_all_elements();
         }
 
-        void clear() { Graph<T>::clear(); }
+        virtual void clear() { Graph<T>::clear(); }
+
+        virtual void clear_edges() { Graph<T>::clear_edges(); }
 
         void set_parallel(bool parallel) { this->parallel = parallel; }
+
+        bool get_parallel() { return parallel; }
+
+        virtual void rebuild(std::vector<std::pair<T, T>> &to_update) {}
+
+        void print_structure() { Graph<T>::print_structure(); }
 };
 
 #endif

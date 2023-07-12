@@ -12,6 +12,7 @@ class Util_Cluster
         static float d_diff(Cluster *&cl1, Cluster *&cl2, float d);
         static float score_diff(Cluster *&cl1, Cluster *&cl2, float d);
         static float min_distance(Cluster *&cl1, Cluster *&cl2);
+        static float avg_distance(Cluster *&cl1, Cluster *&cl2);
 };
 
 #endif

@@ -23,6 +23,7 @@ class Cluster_Container
         // initialize clusters given the data
         virtual void init_clusters_fine_grained() = 0;
         //void init_clusters_random(); // needed for other algorithms
+        virtual void rebuild(std::vector<std::pair<Cluster*, Cluster*>> &to_update) = 0;    // rebuild could yield new edges, for lazy data structures
         
         // delete clusters from heap
         virtual void delete_clusters() = 0;

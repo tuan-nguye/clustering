@@ -97,9 +97,9 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
 
             for(int l_c = std::min(l, L); l_c >= 0; l_c--)
             {
-                mtx->lock();
+                if(mtx != nullptr) mtx->lock();
                 Graph<T> &layer_graph = hnsw[l_c];
-                mtx->unlock();
+                if(mtx != nullptr) mtx->unlock();
                 mtxs[l_c]->lock();
                 search_layer(t, ep, ef_construction, layer_graph, nearest_elements);
                 std::vector<T> neighbours;
@@ -110,6 +110,8 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
                 layer_graph.add_node(t);
                 for(T &tn : neighbours)
                 {
+                    // get last child and pop if > m_max to improve performance
+                    // no need for search_neighbours() function
                     std::vector<T> tn_conn;
                     // lock; bad sync, use nodes with sorted children instead
                     layer_graph.add_edge(t, tn);
@@ -131,7 +133,7 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
                 //if(mtx != nullptr) mtx->unlock();
                 std::vector<T> temp;
                 this->top_k(num_threads+1, t, nearest_elements, temp);
-                std::lock_guard<std::mutex> lock_ep(*mtx);
+                if(mtx != nullptr) std::lock_guard<std::mutex> lock_ep(*mtx);
                 for(T &tep : temp)
                 {
                     if(modifying.count(tep) == 0)
@@ -144,7 +146,7 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
                 nearest_elements.clear();
             }
 
-            std::lock_guard<std::mutex> lock(*mtx);
+            if(mtx != nullptr) std::lock_guard<std::mutex> lock(*mtx);
             if(l > top_layer())
             {
                 hnsw.resize(l+1);
@@ -207,9 +209,9 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
         }
 
         // search multilayer graph hnsw for its k nearest neighbours
-        void knn_search(T &t, int ef, std::vector<T> &neighbours)
+        void knn_search_operation(T &t, std::vector<T> &neighbours)
         {
-            auto cmp = this->get_cmp_function(t);
+            auto cmp = this->cmp_function_bool(t);
             std::set<T, decltype(cmp)> nearest_neighbours(cmp);
             std::vector<T> temp_vec;
             T ep = enter_point;
@@ -217,22 +219,26 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
 
             for(int l_c = L; l_c >= 1; l_c--)
             {
-                search_layer(t, ep, 1, hnsw[l_c]);
+                search_layer(t, ep, 1, hnsw[l_c], temp_vec);
                 nearest_neighbours.insert(temp_vec[0]);
                 ep = *nearest_neighbours.begin();
                 temp_vec.clear();
             }
 
-            search_layer(t, ep, ef, hnsw[0]);
+            search_layer(t, ep, ef_construction, hnsw[0], temp_vec);
             for(T &tt : temp_vec)
             {
                 nearest_neighbours.insert(tt);
             }
 
+            // remove itself
+            nearest_neighbours.erase(t);
+
             // write to output vector
             auto it = nearest_neighbours.begin();
-            neighbours.reserve(ef);
-            for(int i = 0; i < ef; i++) neighbours.push_back(*it++);
+            int k = this->get_k();
+            neighbours.reserve(k);
+            for(int i = 0; i < k; i++) neighbours.push_back(*it++);
         }
 
         int top_layer() { return hnsw.size()-1; }
@@ -248,12 +254,6 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
             std::cout << "}" << std::endl;
         }
     protected:
-        // lazy implementation doesn't update edges immediately
-        void add_edge_limit_k_and_update(T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
-        {
-            this->add_edge_limit_k(t1, t2);
-        }
-
         // add node to hierarchy
         void add_edges_operation(T &t, std::mutex *mtx)
         {
@@ -285,6 +285,38 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
             Auto_Edge_Graph<T>::build_graph();
             // call knn_search for every node
             // parallel or single threaded
+            knn_search();
+        }
+
+        void knn_search()
+        {
+            if(this->get_parallel()) knn_search_parallel();
+            else knn_search_single();
+        }
+
+        void knn_search_single()
+        {
+            for(T &t : this->get_all_elements())
+            {
+                std::vector<T> knn;
+                knn_search_operation(t, knn);
+                for(T &tk : knn) this->add_edge_limit_k(t, tk);
+            }
+        }
+
+        void knn_search_parallel()
+        {
+
+        }
+
+        void update_outgoing_edges_all(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
+        {
+            // leave empty, lazy implementation
+        }
+
+        void replace_incoming_edges_all(T &t, T &tn, std::vector<T> &children, Maptor<T> &candidates, std::vector<std::pair<T, T>> &to_update)
+        {
+            // leave empty, lazy implementation
         }
     public:
         Lazy_ANN_Graph(int k, int m, int ef_construction, std::function<float(T&, T&)> cmp): KNN_Graph<T>(k, cmp), m(m), m_l(1/std::log(m)), m_max(2*m), ef_construction(ef_construction)
@@ -293,11 +325,26 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
             mtxs.reserve(1000);
         }
 
-        void combine_nodes_into(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
+        void rebuild(std::vector<std::pair<T, T>> &to_update)
         {
-            KNN_Graph<T>::combine_nodes_into(c, t1, t2, to_update);
-            if(this->size_edges() == 0) this->build_graph(); // doesnt work, introduce new function
-            // rebuild() to rebuild all lazy edges, non-lazy data structures should do nothing
+            // clear current state
+            this->clear_edges();
+            hnsw.clear();
+            mtxs.clear();
+
+            // rebuild
+            this->build_graph();
+
+            // add pairs to update vector
+            for(T &t : this->get_all_elements())
+            {
+                std::vector<T> children;
+                this->get_neighbours(children, t);
+                for(T &tc : children)
+                {
+                    to_update.emplace_back(t, tc);
+                }
+            }
         }
 };
 

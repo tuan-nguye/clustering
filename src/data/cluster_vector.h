@@ -20,6 +20,7 @@ class Cluster_Vector: public Cluster_Container
         // initialize clusters given the data
         void init_clusters_fine_grained();
         //void init_clusters_random(); // needed for other algorithms
+        void rebuild(std::vector<std::pair<Cluster*, Cluster*>> &to_update) {}
         void delete_clusters();
 
         // access functions

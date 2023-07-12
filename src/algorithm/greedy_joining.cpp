@@ -28,6 +28,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     Cache cache;
     cache.to_init.insert(cache.to_init.end(), cls_container->begin(), cls_container->end());
     this->init_cache(cache, cls_container);
+    bool rebuilt = false;
 
     while(1)
     {
@@ -60,16 +61,28 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         }
 
         //std::cout << "cl1 exists: " << cls_graph.find(std::get<1>(top)) << ", cl2 exists: " << cls_graph.find(std::get<2>(top)) << std::endl;
-        //std::cout << "number of clusters: " << cls_container->size() << ", pq size: " << cache.pq.size() << ", score improvement: " << std::get<0>(top) << std::endl;
+        std::cout << "number of clusters: " << cls_container->size() << ", pq size: " << cache.pq.size() << ", score improvement: " << std::get<0>(top) << std::endl;
 
         //for(Cluster *cl : cls_graph) std::cout << cl->to_string() << std::endl;
 
         // if the score is worse then stop
-        if(std::get<0>(top) >= 0) break;
-        else score += std::get<0>(top);
-        
-        //std::cout << "join: " << std::get<1>(top)->to_string() << " - " << std::get<2>(top)->to_string() << std::endl;
-        join_clusters(top, cache, cls_container);
+        if(std::get<0>(top) >= 0)
+        {
+            if(rebuilt)
+            {
+                break;
+            } else
+            {
+                cls_container->rebuild(cache.to_update);
+                rebuilt = true;
+            }
+        } else
+        {
+            score += std::get<0>(top);
+            //std::cout << "join: " << std::get<1>(top)->to_string() << " - " << std::get<2>(top)->to_string() << std::endl;
+            join_clusters(top, cache, cls_container);
+            rebuilt = false;
+        }
     }
 
     std::cout << "cmp_count: " << cmp_count << std::endl;
@@ -185,6 +198,8 @@ void Greedy_Joining::update_cache(Cache &cache, Cluster_Container *cls_container
             cache.pq.emplace(score_diff, cl1, cl2);
         }
     }
+
+    cache.to_update.clear();
 }
 
 void Greedy_Joining::best_pair_iterate(Edge &best, Cluster_Container *cls_container)
@@ -284,7 +299,6 @@ Edge Greedy_Joining::get_next_pair_iterate(Cluster_Container *cls_container)
 void Greedy_Joining::join_clusters(Edge &e, Cache &cache, Cluster_Container *cls_container)
 {
     Cluster *cl1 = std::get<1>(e), *cl2 = std::get<2>(e);
-    cache.to_update.clear();
     Cluster *cl_joined = cls_container->join(cl1, cl2, cache.to_update);
 
     if(cache_enabled)
@@ -292,6 +306,5 @@ void Greedy_Joining::join_clusters(Edge &e, Cache &cache, Cluster_Container *cls
         cache.invalid.insert(cl1);
         cache.invalid.insert(cl2);
         cache.to_init.clear();
-        //cache.to_init.push_back(cl_joined);
     }
 }

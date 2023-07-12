@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "util/util_cluster.h"
 
 Cluster* Util_Cluster::join(Cluster *&cl1, Cluster *&cl2, float d)
@@ -48,4 +50,9 @@ float Util_Cluster::min_distance(Cluster *&cl1, Cluster *&cl2)
     }
 
     return min;
+}
+
+float Util_Cluster::avg_distance(Cluster *&cl1, Cluster *&cl2)
+{
+    return f_diff(cl1, cl2)/(cl1->size()*cl2->size());
 }

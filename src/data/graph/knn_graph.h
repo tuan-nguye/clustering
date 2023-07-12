@@ -8,15 +8,15 @@
 #include "data/graph/sorted_node.h"
 #include "data/structures/maptor.h"
 
-#ifndef __knn_graph__
-#define __knn_graph__
+#ifndef __knn_graph_include__
+#define __knn_graph_include__
 
 
 template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
 {
     private:
         // comparison function for evaluating distance between two clusters
-        std::function<float(T&, T&)> cmp;
+        std::function<float(T&, T&)> distance;
         // distance constant
         float dist;
         // k constant, number of neighbours
@@ -24,13 +24,16 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
         // map storing all incoming neighbours of a value
         std::unordered_map<T, std::unordered_set<T>> incoming;
 
-        void update_outgoing_edges(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
+    protected:
+        virtual void update_outgoing_edges(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
         {
             std::vector<T> children1, children2;
             this->get_children(children1, t1);
             this->get_children(children2, t2);
             Maptor<T> outgoing;
-            float b_limit = cmp(t1, children1.back()) + cmp(t2, children2.back());
+            float b_limit = 0.0f;
+            if(children1.size() != 0) b_limit += distance(t1, children1.back());
+            if(children2.size() != 0) b_limit += distance(t2, children2.back());
             /*
             std::cout << "join: t1 = " << t1->to_string() << " and t2 = " << t2->to_string() << std::endl;
             std::vector<T> inc1, inc2;
@@ -55,14 +58,14 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             for(T &tn1 : children1)
             {
                 incoming[tn1].erase(t1);
-                if(cmp(c, tn1) > b_limit) continue;
+                if(distance(c, tn1) > b_limit) continue;
                 outgoing.push_back(tn1);
             }
 
             for(T &tn2 : children2)
             {
                 incoming[tn2].erase(t2);
-                if(cmp(c, tn2) > b_limit) continue;
+                if(distance(c, tn2) > b_limit) continue;
                 outgoing.push_back(tn2);
             }
             outgoing.erase(t1);
@@ -77,18 +80,23 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
                 for(T &t : outgoing) this->add_edge_limit_k_and_update(c, t, to_update);
             } else
             {
-                Maptor<T> candidates;
-                candidates.reserve(this->size());
-                for(T &t : this->get_all_elements()) candidates.push_back(t);
-                candidates.erase(c);
-                candidates.erase(t1);
-                candidates.erase(t2);
-
-                std::vector<T> top_k_elements;
-                this->top_k(k, c, candidates.get_vector(), top_k_elements);
-                for(T &t : top_k_elements)
-                    this->add_edge_limit_k_and_update(c, t, to_update);
+                update_outgoing_edges_all(c, t1, t2, to_update);
             }
+        }
+
+        virtual void update_outgoing_edges_all(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
+        {
+            Maptor<T> candidates;
+            candidates.reserve(this->size());
+            for(T &t : this->get_all_elements()) candidates.push_back(t);
+            candidates.erase(c);
+            candidates.erase(t1);
+            candidates.erase(t2);
+
+            std::vector<T> top_k_elements;
+            this->top_k(k, c, candidates.get_vector(), top_k_elements);
+            for(T &t : top_k_elements)
+                this->add_edge_limit_k_and_update(c, t, to_update);
         }
 
         void update_incoming_edges(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
@@ -98,7 +106,7 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             replace_incoming_edges(t2, c, excluded_values, to_update);
         }
 
-        void replace_incoming_edges(T &t, T &c, std::unordered_set<T> &excluded_values, std::vector<std::pair<T, T>> &to_update)
+        virtual void replace_incoming_edges(T &t, T &c, std::unordered_set<T> &excluded_values, std::vector<std::pair<T, T>> &to_update)
         {
             std::vector<T> inc_vec(incoming[t].begin(), incoming[t].end());
             Maptor<T> candidates;
@@ -113,36 +121,40 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
                 this->remove_edge_directed(tn, t);
                 //if(excluded_values.count(n->get_value()) != 0) continue;
 
-                if(cmp(tn, c) <= cmp(tn, last) && std::find(children.begin(), children.end(), c) == children.end())
+                if(distance(tn, c) <= distance(tn, last) && std::find(children.begin(), children.end(), c) == children.end())
                 {
                     this->add_edge_limit_k_and_update(tn, c, to_update);
                 } else
                 {
-                    // erase elements that are children already or itself
-                    auto it = children.begin();
-                    while(it != children.end())
-                    {
-                        if(!candidates.erase(*it)) it = children.erase(it);
-                        else it++;
-                    }
-                    candidates.erase(tn);
-                    
-                    if(candidates.empty()) continue;
-                    std::vector<T> top1;
-                    top_k(1, tn, candidates.get_vector(), top1);
-                    this->add_edge_limit_k_and_update(tn, top1[0], to_update);
-
-                    // restore candidates
-                    for(T &tcc : children) candidates.push_back(tcc);
-                    candidates.push_back(tn);
+                    replace_incoming_edges_all(t, tn, children, candidates, to_update);
                 }
             }
         }
 
-    protected:
+        virtual void replace_incoming_edges_all(T &t, T &tn, std::vector<T> &children, Maptor<T> &candidates, std::vector<std::pair<T, T>> &to_update)
+        {
+            // erase elements that are children already or itself
+            auto it = children.begin();
+            while(it != children.end())
+            {
+                if(!candidates.erase(*it)) it = children.erase(it);
+                else it++;
+            }
+            candidates.erase(tn);
+            
+            if(candidates.empty()) return;
+            std::vector<T> top1;
+            top_k(1, tn, candidates.get_vector(), top1);
+            this->add_edge_limit_k_and_update(tn, top1[0], to_update);
+
+            // restore candidates
+            for(T &tcc : children) candidates.push_back(tcc);
+            candidates.push_back(tn);
+        }
+
         Node<T>* create_node(T &t)
         {
-            return new Sorted_Node<T>(t, cmp);
+            return new Sorted_Node<T>(t, distance);
         }
 
         virtual void add_edges_operation(T &t, std::mutex *mtx)
@@ -175,22 +187,18 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
         // add edge from t1 -> t2
         void add_edge_limit_k(T &t1, T &t2)
         {
-            std::vector<T> children1;
-            this->get_children(children1, t1);
-            
-            if(children1.size() < k)
+            if(this->number_of_children(t1) < k)
             {
                 this->add_edge_directed(t1, t2);
             } else
             {
-                T &tl = children1.back();
-                if(cmp(t1, t2) < cmp(t1, tl))
+                T &tl = this->last_child(t1);
+                if(distance(t1, t2) < distance(t1, tl))
                 {
                     this->remove_edge_directed(t1, tl);
                     this->add_edge_directed(t1, t2);
                 }
             }
-            //std::cout << "k = " << children1.size() << std::endl;
         }
 
         virtual void add_edge_limit_k_and_update(T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
@@ -203,12 +211,24 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
         // compares distance of two values to &t
         std::function<float(T&, T&)> cmp_function(T &t)
         {
-            //std::function<float(T&, T&)> cmp_captured = cmp;
+            //std::function<float(T&, T&)> cmp_captured = distance;
             std::function<float(T&, T&)> eval_nearest_neighbour = [&t, this](T &t1, T &t2) -> float
             {
-                return this->cmp(t, t1) - this->cmp(t, t2);
+                return this->distance(t, t1) - this->distance(t, t2);
             };
             return eval_nearest_neighbour;
+        }
+
+        // returns cmp function for sorted data structures
+        // returns bool whether first element is smaller than second
+        std::function<bool(T, T)> cmp_function_bool(T &t)
+        {
+            std::function<bool(T, T)> eval_compare = [&t, this](T t1, T t2) -> float
+            {
+                return this->distance(t, t1) < this->distance(t, t2);
+            };
+
+            return eval_compare;
         }
 
         // finds the top k elements according to the comparison function
@@ -225,7 +245,7 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
                 } else
                 {
                     T &last = top_kek.back();
-                    if(cmp(t, tn) < cmp(t, last))
+                    if(distance(t, tn) < distance(t, last))
                     {
                         top_kek.erase_back();
                         top_kek.push(tn);
@@ -245,9 +265,9 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
         
         int get_d() { return dist; }
 
-        std::function<float(T&, T&)>& get_cmp() { return cmp; }
+        std::function<float(T&, T&)>& get_cmp() { return distance; }
     public:
-        KNN_Graph(int k, std::function<float(T&, T&)> cmp): k(k), cmp(cmp) {}
+        KNN_Graph(int k, std::function<float(T&, T&)> distance): k(k), distance(distance) {}
 
         // 1. create new joined node
         // 2. iterate through all outgoing neighbours of t1, t2
@@ -286,6 +306,7 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             
             //std::cout << "match: " << this->match_in_out() << std::endl;
             //std::cout << "gone:\nt1 = " << gone(t1) << "\nt2 = " << gone(t2) << std::endl;
+            //this->print_structure();
         }
 
         // override base function to update incoming map
@@ -313,6 +334,12 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
         {
             this->get_children(vec, t);
             
+        }
+
+        void clear()
+        {
+            incoming.clear();
+            Graph<T>::clear();
         }
 
         bool match_in_out()

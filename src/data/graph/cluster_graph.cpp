@@ -52,6 +52,11 @@ void Cluster_Graph::init_clusters_fine_grained()
     ae_graph->set_nodes(clusters);
 }
 
+void Cluster_Graph::rebuild(std::vector<std::pair<Cluster*, Cluster*>> &to_update)
+{
+    ae_graph->rebuild(to_update);
+}
+
 void Cluster_Graph::delete_clusters()
 {
     for(Cluster *cl : ae_graph->get_all_elements())

@@ -186,13 +186,13 @@ int main()
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm and select cluster data structure
-    float d = 2200.0f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2000.0
+    float d = 1.2f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2000.0
     int k = 1;
-    std::function<float(Cluster*&, Cluster*&)> cmp = [d](Cluster *&cl1, Cluster *&cl2) -> float
+    std::function<float(Cluster*&, Cluster*&)> cmp = [](Cluster *&cl1, Cluster *&cl2) -> float
     {
-        return Util_Cluster::score_diff(cl1, cl2, d);
+        return Util_Cluster::avg_distance(cl1, cl2);
     };
-    bool enable_parallel = true;
+    bool enable_parallel = false;
     bool enable_cache = true;
     Time timer;
 
@@ -202,7 +202,7 @@ int main()
     Lazy_ANN_Graph<Cluster*> ann_graph(k, 5, 10, cmp);
     ae_graph = &dist_graph;
     ae_graph = &ann_graph;
-    //ae_graph = &knn_graph;
+    ae_graph = &knn_graph;
     ae_graph->set_parallel(enable_parallel);
     Cluster_Graph cls_graph(d, ae_graph);
     Cluster_Vector cls_vector(d);
@@ -211,11 +211,11 @@ int main()
     cls_container = &cls_graph;
     //cls_container = &cls_vector;
 
-    
-    /*for(Data *d : data) cls_container->add_data(d);
+    /*
+    for(Data *d : data) cls_container->add_data(d);
     cls_container->init_clusters_fine_grained();
-    return 0;*/
-    
+    return 0;
+    */
 
     Greedy_Joining gr_joining;
     gr_joining.set_cache(enable_cache);

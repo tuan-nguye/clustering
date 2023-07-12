@@ -130,7 +130,7 @@ template<typename T> class Graph
             return elements;
         }
 
-        void clear()
+        virtual void clear()
         {
             elements.clear();
             for(auto &e : node_map)
@@ -140,6 +140,38 @@ template<typename T> class Graph
             }
         }
 
+        virtual void clear_edges()
+        {
+            for(auto &e : node_map)
+            {
+                Node<T> *n = e.second;
+                n->clear_children();
+            }
+        }
+
+        void print_structure()
+        {
+            std::string out = "graph[\n";
+
+            for(auto &e : node_map)
+            {
+                out += e.first->to_string() + ": [";
+                bool first = true;
+                for(Node<T> *nc : e.second->get_children())
+                {
+                    if(first) first = false;
+                    else out += ", ";
+                    out += nc->get_value()->to_string();
+                }
+                out += "]\n";
+            }
+
+            out += "]";
+
+            std::cout << out << std::endl;
+        }
+
+        virtual void rebuild(std::vector<std::pair<T, T>> &to_update) {}
 };
 
 #endif
