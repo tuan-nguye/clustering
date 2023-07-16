@@ -265,7 +265,7 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
         
         int get_d() { return dist; }
 
-        std::function<float(T&, T&)>& get_cmp() { return distance; }
+        std::function<float(T&, T&)>& get_distance_function() { return distance; }
     public:
         KNN_Graph(int k, std::function<float(T&, T&)> distance): k(k), distance(distance) {}
 
@@ -333,13 +333,18 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
         void get_neighbours(std::vector<T> &vec, T &t)
         {
             this->get_children(vec, t);
-            
         }
 
         void clear()
         {
             incoming.clear();
-            Graph<T>::clear();
+            Auto_Edge_Graph<T>::clear();
+        }
+
+        void clear_edges()
+        {
+            incoming.clear();
+            Auto_Edge_Graph<T>::clear_edges();
         }
 
         bool match_in_out()

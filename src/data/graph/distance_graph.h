@@ -24,13 +24,11 @@ template<typename T> class Distance_Graph: public Auto_Edge_Graph<T>
                 bool done;
                 if(mtx == nullptr)
                 {
-                    done = visited.count(t) != 0;
-                    visited.insert(t);
+                    done = visited.count(tn) != 0;
                 } else
                 {
                     std::lock_guard<std::mutex> lock(*mtx);
                     done = visited.count(t) != 0;
-                    visited.insert(t);
                 }
 
                 if(done || t == tn || cmp(t, tn) > dist) continue;
@@ -42,6 +40,15 @@ template<typename T> class Distance_Graph: public Auto_Edge_Graph<T>
                     std::lock_guard<std::mutex> lock(*mtx);
                     Graph<T>::add_edge(t, tn);
                 }
+            }
+
+            if(mtx == nullptr)
+            {
+                visited.insert(t);
+            } else
+            {
+                std::lock_guard<std::mutex> lock(*mtx);
+                visited.insert(t);
             }
         }
     public:

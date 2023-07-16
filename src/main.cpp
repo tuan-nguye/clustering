@@ -2,6 +2,7 @@
 #include <vector>
 #include <thread>
 #include <functional>
+#include <mutex>
 
 #include "parser/csv_parser.h"
 #include "parser/ubyte_parser.h"
@@ -68,7 +69,7 @@ void print_some_info_about_distances(std::vector<Data*> &data)
     std::cout << "average same labels: " << avg_same << ", average diff labels: " << avg_diff << std::endl;
 }
 
-void show_results(std::unordered_map<Data*, std::string> result, std::string additional_info, bool write)
+void show_results(std::unordered_map<Data*, std::string> result, std::string additional_info, bool table, bool write)
 {
     // print results
     Print_Result_Table print_result;
@@ -85,7 +86,7 @@ void show_results(std::unordered_map<Data*, std::string> result, std::string add
         out += std::string(typeid(*metric).name()) + ": " + std::to_string(metric->execute(result)) + "\n";
     }
 
-    out += "\n" + print_result.print(result);
+    if(table) out += "\n" + print_result.print(result);
     std::cout << out << std::endl;
 
     if(!write) return;
@@ -164,7 +165,7 @@ void repeat_and_write_csv(std::vector<Data*> data, float d_start, float d_end, f
 }
 
 // global variables
-int num_threads = std::thread::hardware_concurrency();
+int num_threads = 2;//std::thread::hardware_concurrency();
 
 int main()
 {
@@ -186,20 +187,20 @@ int main()
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm and select cluster data structure
-    float d = 1.2f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2000.0
-    int k = 1;
+    float d = 1.2f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
+    int k = 5;
     std::function<float(Cluster*&, Cluster*&)> cmp = [](Cluster *&cl1, Cluster *&cl2) -> float
     {
         return Util_Cluster::avg_distance(cl1, cl2);
     };
-    bool enable_parallel = false;
+    bool enable_parallel = true;
     bool enable_cache = true;
     Time timer;
 
     Auto_Edge_Graph<Cluster*> *ae_graph;
     Distance_Graph<Cluster*> dist_graph(d, &Util_Cluster::min_distance);
     KNN_Graph<Cluster*> knn_graph(k, cmp);
-    Lazy_ANN_Graph<Cluster*> ann_graph(k, 5, 10, cmp);
+    Lazy_ANN_Graph<Cluster*> ann_graph(k, 5, 20, cmp);
     ae_graph = &dist_graph;
     ae_graph = &ann_graph;
     ae_graph = &knn_graph;
@@ -264,7 +265,7 @@ int main()
     additional_info += "objective value: " + std::to_string(clustering->get_objective_value()) + "\n";
     additional_info += "underlying data structure: " + std::string(typeid(*ae_graph).name()) + "\n";
     
-    show_results(clustering_result, additional_info, false);
+    show_results(clustering_result, additional_info, false, false);
 
     return 0;
 }

@@ -61,7 +61,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         }
 
         //std::cout << "cl1 exists: " << cls_graph.find(std::get<1>(top)) << ", cl2 exists: " << cls_graph.find(std::get<2>(top)) << std::endl;
-        std::cout << "number of clusters: " << cls_container->size() << ", pq size: " << cache.pq.size() << ", score improvement: " << std::get<0>(top) << std::endl;
+        //std::cout << "number of clusters: " << cls_container->size() << ", pq size: " << cache.pq.size() << ", score improvement: " << std::get<0>(top) << std::endl;
 
         //for(Cluster *cl : cls_graph) std::cout << cl->to_string() << std::endl;
 

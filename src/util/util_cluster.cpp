@@ -14,6 +14,7 @@ Cluster* Util_Cluster::join(Cluster *&cl1, Cluster *&cl2, float d)
     cl_joined->add_to_sum_of_squares(cl1->get_sum_of_squares());
     cl_joined->add_to_sum_of_squares(cl2->get_sum_of_squares());
 
+    cl_joined->reserve(cl1->size()+cl2->size());
     cl_joined->insert(cl_joined->end(), cl1->begin(), cl1->end());
     cl_joined->insert(cl_joined->end(), cl2->begin(), cl2->end());
 
