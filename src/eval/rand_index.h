@@ -3,7 +3,7 @@
 #include <string>
 
 #include "eval/evaluation.h"
-#include "eval/partition-comparison.h"
+#include "partition-comparison.h"
 
 #ifndef __rand_index_include__
 #define __rand_index_include__

@@ -3,8 +3,9 @@ rwildcard = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(
 # directories
 OBJDIR = ./build
 SRCDIR = ./src
+INCDIR = ./include
 
-DEFAULT_CPPFLAGS = -I $(SRCDIR)
+DEFAULT_CPPFLAGS = -I $(SRCDIR) -I $(INCDIR)
 EXEC_CPPFLAGS = -Ofast
 DEBUG_CPPFLAGS = -g
 CPPFLAGS = $(DEFAULT_CPPFLAGS) $(EXEC_CPPFLAGS)

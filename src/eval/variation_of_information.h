@@ -3,7 +3,7 @@
 #include <string>
 
 #include "eval/evaluation.h"
-#include "eval/partition-comparison.h"
+#include "partition-comparison.h"
 
 #ifndef __variation_of_information_include__
 #define __variation_of_information_include__

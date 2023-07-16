@@ -21,7 +21,7 @@
 #include "data/cluster_vector.h"
 #include "data/structures/sorted_vector.h"
 #include "data/graph/lazy_ann_graph.h"
-#include "data/graph/lazy_ann_graph.h"
+#include "data/graph/lazy_ann_graph2.h"
 #include "eval/variation_of_information.h"
 
 void print_digit_with_label(Data *d)
@@ -165,7 +165,7 @@ void repeat_and_write_csv(std::vector<Data*> data, float d_start, float d_end, f
 }
 
 // global variables
-int num_threads = 2;//std::thread::hardware_concurrency();
+int num_threads = std::thread::hardware_concurrency();
 
 int main()
 {
@@ -176,19 +176,19 @@ int main()
     CSV_Parser csv_parser;
     Ubyte_Parser ubyte_parser;
 
-    parser = &csv_parser;
+    //parser = &csv_parser;
     //parser->parse(data, "./res/test/test_example.data");
-    parser->parse(data, "./res/iris/iris_data.data");
-    //parser = &ubyte_parser;
+    //parser->parse(data, "./res/iris/iris_data.data");
+    parser = &ubyte_parser;
     //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
-    //parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
+    parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
     
     //data.resize(5000);
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm and select cluster data structure
-    float d = 1.2f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
-    int k = 5;
+    float d = 2200.0f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
+    int k = 1;
     std::function<float(Cluster*&, Cluster*&)> cmp = [](Cluster *&cl1, Cluster *&cl2) -> float
     {
         return Util_Cluster::avg_distance(cl1, cl2);
@@ -200,10 +200,12 @@ int main()
     Auto_Edge_Graph<Cluster*> *ae_graph;
     Distance_Graph<Cluster*> dist_graph(d, &Util_Cluster::min_distance);
     KNN_Graph<Cluster*> knn_graph(k, cmp);
+    Lazy_ANN_Graph2<Cluster*> ann_graph2(k, 5, 20, cmp);
     Lazy_ANN_Graph<Cluster*> ann_graph(k, 5, 20, cmp);
     ae_graph = &dist_graph;
-    ae_graph = &ann_graph;
     ae_graph = &knn_graph;
+    //ae_graph = &ann_graph2;
+    ae_graph = &ann_graph;
     ae_graph->set_parallel(enable_parallel);
     Cluster_Graph cls_graph(d, ae_graph);
     Cluster_Vector cls_vector(d);

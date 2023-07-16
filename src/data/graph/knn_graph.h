@@ -77,7 +77,9 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             */
             if(outgoing.size() >= k)
             {
-                for(T &t : outgoing) this->add_edge_limit_k_and_update(c, t, to_update);
+                std::vector<T> topk;
+                top_k(k, c, outgoing.get_vector(), topk);
+                for(T &t : topk) this->add_edge_limit_k_and_update(c, t, to_update);
             } else
             {
                 update_outgoing_edges_all(c, t1, t2, to_update);

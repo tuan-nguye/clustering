@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <stdexcept>
+#include <mutex>
 
 #include "data/graph/node.h"
 #include "data/graph/default_node.h"
@@ -15,6 +16,7 @@ template<typename T> class Graph
     private:
         std::unordered_map<T, Node<T>*> node_map;
         Maptor<T> elements;
+        std::mutex mtx_count;
         long long edge_count = 0;
     protected:
         Node<T>* get_node(T &t)
@@ -68,6 +70,7 @@ template<typename T> class Graph
             if(!find_node(t1) || !find_node(t2)) throw std::invalid_argument("t1 or t2 is not a node, can't add edge");
             Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
             n1->add_child(n2);
+            std::lock_guard<std::mutex> lock(mtx_count);
             edge_count++;
         }
 
@@ -83,6 +86,7 @@ template<typename T> class Graph
             else if(!find_node(t2)) return;
             Node<T> *n1 = get_node(t1), *n2 = get_node(t2);
             n1->remove_child(n2);
+            std::lock_guard<std::mutex> lock(mtx_count);
             edge_count--;
         }
 
@@ -147,6 +151,7 @@ template<typename T> class Graph
                 Node<T> *n = e.second;
                 n->clear_children();
             }
+            edge_count = 0;
         }
 
         void print_structure()

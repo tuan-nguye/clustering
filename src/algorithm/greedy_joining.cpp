@@ -29,6 +29,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     cache.to_init.insert(cache.to_init.end(), cls_container->begin(), cls_container->end());
     this->init_cache(cache, cls_container);
     bool rebuilt = false;
+    bool print_info = true;
 
     while(1)
     {
@@ -61,7 +62,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         }
 
         //std::cout << "cl1 exists: " << cls_graph.find(std::get<1>(top)) << ", cl2 exists: " << cls_graph.find(std::get<2>(top)) << std::endl;
-        //std::cout << "number of clusters: " << cls_container->size() << ", pq size: " << cache.pq.size() << ", score improvement: " << std::get<0>(top) << std::endl;
+        if(print_info) std::cout << "number of clusters: " << cls_container->size() << ", score improvement: " << std::get<0>(top);
 
         //for(Cluster *cl : cls_graph) std::cout << cl->to_string() << std::endl;
 
@@ -83,6 +84,8 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
             join_clusters(top, cache, cls_container);
             rebuilt = false;
         }
+
+        if(print_info) std::cout << ", pq size: " << cache.pq.size() << ", to_update.size(): " << cache.to_update.size() << std::endl;
     }
 
     std::cout << "cmp_count: " << cmp_count << std::endl;
