@@ -191,7 +191,8 @@ template<typename T> class Lazy_ANN_Graph2: public KNN_Graph<T>
                 //unlock_layer(l_c);
                 
                 std::vector<T> temp;
-                this->top_k(1, t, nearest_elements, temp);
+                std::unordered_set<T> exclude;
+                this->top_k(1, t, nearest_elements, exclude, temp);
                 if(this->get_distance_function()(t, temp[0]) < this->get_distance_function()(t, ep)) ep = temp[0];
                 // element_lock[nearest_elements[0]]
                 nearest_elements.clear();
@@ -258,7 +259,8 @@ template<typename T> class Lazy_ANN_Graph2: public KNN_Graph<T>
 
         void select_neighbours(T &t, std::vector<T> &candidates, int m, std::vector<T> &top_m)
         {
-            this->top_k(m, t, candidates, top_m);
+            std::unordered_set<T> empty;
+            this->top_k(m, t, candidates, empty, top_m);
         }
 
         // search multilayer graph hnsw for its k nearest neighbours
@@ -339,11 +341,11 @@ template<typename T> class Lazy_ANN_Graph2: public KNN_Graph<T>
             Auto_Edge_Graph<T>::build_graph();
             // call knn_search for every node
             // parallel or single threaded
-            knn_search();
+            knn_search_and_add();
             print_debug();
         }
 
-        void knn_search()
+        void knn_search_and_add()
         {
             if(this->get_parallel()) knn_search_parallel();
             else knn_search_single();
@@ -394,11 +396,11 @@ template<typename T> class Lazy_ANN_Graph2: public KNN_Graph<T>
             knn_search(t, knn);
             if(mtx == nullptr)
             {
-                for(T &tk : knn) this->add_edge_limit_k(t, tk);
+                for(T &tk : knn) this->add_edge_directed(t, tk);
             } else
             {
                 std::lock_guard<std::mutex> lock(*mtx);
-                for(T &tk : knn) this->add_edge_limit_k(t, tk);
+                for(T &tk : knn) this->add_edge_directed(t, tk);
             }
         }
 

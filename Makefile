@@ -64,11 +64,5 @@ run:
 debugger:
 	$(GDB) $(OBJDIR)/$(OUTPUT)
 
-# run tests: doesn't work
-
-TEST_OUTPUT = tests
-
-test: $(OBJDIR)/$(OUTPUT) run_test
-
-run_test:
-	$(OBJDIR)/$(TEST_OUTPUT)
+noop: CPPFLAGS = $(DEFAULT_CPPFLAGS)
+noop: $(OBJDIR)/$(OUTPUT) run

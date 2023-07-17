@@ -46,6 +46,12 @@ template<typename T> class Maptor
             }
         }
     public:
+        void reserve(int size)
+        {
+            element_vec.reserve(size);
+            idx_map.reserve(size);
+        }
+
         void push_back(T &elem)
         {
             if(idx_map.find(elem) != idx_map.end()) return;

@@ -26,10 +26,15 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     std::cout << "time to build container structure: " << timer.stop() << std::endl;
 
     Cache cache;
-    cache.to_init.insert(cache.to_init.end(), cls_container->begin(), cls_container->end());
-    this->init_cache(cache, cls_container);
+    if(cache_enabled)
+    {
+        cache.to_init.insert(cache.to_init.end(), cls_container->begin(), cls_container->end());
+        this->init_cache(cache, cls_container);
+    }
+    
     bool rebuilt = false;
     bool print_info = true;
+    std::string out;
 
     while(1)
     {
@@ -62,7 +67,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         }
 
         //std::cout << "cl1 exists: " << cls_graph.find(std::get<1>(top)) << ", cl2 exists: " << cls_graph.find(std::get<2>(top)) << std::endl;
-        if(print_info) std::cout << "number of clusters: " << cls_container->size() << ", score improvement: " << std::get<0>(top);
+        out += "number of clusters: " + std::to_string(cls_container->size()) + ", score improvement: " + std::to_string(std::get<0>(top));
 
         //for(Cluster *cl : cls_graph) std::cout << cl->to_string() << std::endl;
 
@@ -85,7 +90,9 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
             rebuilt = false;
         }
 
-        if(print_info) std::cout << ", pq size: " << cache.pq.size() << ", to_update.size(): " << cache.to_update.size() << std::endl;
+        out += ", pq size: " + std::to_string(cache.pq.size()) + ", to_update.size(): " + std::to_string(cache.to_update.size());
+        if(print_info) std::cout << out << std::endl;
+        out.clear();
     }
 
     std::cout << "cmp_count: " << cmp_count << std::endl;
@@ -116,7 +123,7 @@ void Greedy_Joining::init_cache(Cache &cache, Cluster_Container *cls_container)
     {
         init_cache_single(cache, cls_container);
     }
-    
+    cache.to_init.clear();
 }
 
 void Greedy_Joining::init_cache_single(Cache &cache, Cluster_Container *cls_container)
@@ -308,6 +315,8 @@ void Greedy_Joining::join_clusters(Edge &e, Cache &cache, Cluster_Container *cls
     {
         cache.invalid.insert(cl1);
         cache.invalid.insert(cl2);
-        cache.to_init.clear();
+    } else
+    {
+        cache.to_update.clear();
     }
 }

@@ -117,6 +117,12 @@ template<typename T> class Graph
             return get_node(t)->get_children().size();
         }
 
+        virtual bool is_child(T &t, T &c)
+        {
+            if(!find_node(t) || !find_node(c)) throw std::invalid_argument("t or c doesn't exist, can't return whether c is a child of t");
+            return get_node(t)->contains_child(get_node(c));
+        }
+
         // get neigbhours of the node
         // no difference in bidirectional graph
         // in directional returns all nodes connected to it

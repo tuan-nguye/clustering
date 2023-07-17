@@ -145,7 +145,7 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
             // leave empty, lazy implementation
         }
 
-        void replace_incoming_edges_all(T &t, T &tn, std::vector<T> &children, Maptor<T> &candidates, std::vector<std::pair<T, T>> &to_update)
+        void replace_incoming_edges_all(T &t, std::unordered_set<T> exclude, std::vector<std::pair<T, T>> &to_update)
         {
             // leave empty, lazy implementation
         }

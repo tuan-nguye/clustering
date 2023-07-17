@@ -24,6 +24,7 @@ Cluster* Cluster_Vector::join(Cluster *cl1, Cluster *cl2, std::vector<std::pair<
 // initialize clusters given the data
 void Cluster_Vector::init_clusters_fine_grained()
 {
+    clusters.reserve(this->get_data().size());
     float dist = get_d();
 
     for(Data *d : get_data())

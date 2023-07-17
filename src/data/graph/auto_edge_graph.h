@@ -104,6 +104,11 @@ template<typename T> class Auto_Edge_Graph: protected Graph<T>
             return Graph<T>::number_of_children(t);
         }
 
+        bool is_child(T &t, T &c)
+        {
+            return Graph<T>::is_child(t, c);
+        }
+
         virtual void get_neighbours(std::vector<T> &vec, T &t)
         {
             Graph<T>::get_neighbours(vec, t);

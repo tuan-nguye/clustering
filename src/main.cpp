@@ -183,12 +183,12 @@ int main()
     //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
     
-    //data.resize(5000);
+    //data.resize(1000);
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm and select cluster data structure
-    float d = 2200.0f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
-    int k = 1;
+    float d = 2700.0f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
+    int k = 5;
     std::function<float(Cluster*&, Cluster*&)> cmp = [](Cluster *&cl1, Cluster *&cl2) -> float
     {
         return Util_Cluster::avg_distance(cl1, cl2);

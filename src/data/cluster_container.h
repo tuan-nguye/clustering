@@ -11,6 +11,8 @@ class Cluster_Container
     private:
         float d;
         std::vector<Data*> data;
+        // sorted children, when iterating only need to look at first child
+        bool sorted = false;
     public:
         Cluster_Container(float d): d(d) {}
         void add_data(Data *d) { data.push_back(d); }
