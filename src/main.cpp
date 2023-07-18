@@ -187,7 +187,7 @@ int main()
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm and select cluster data structure
-    float d = 2700.0f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
+    float d = 2200.0f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
     int k = 5;
     std::function<float(Cluster*&, Cluster*&)> cmp = [](Cluster *&cl1, Cluster *&cl2) -> float
     {
@@ -266,6 +266,7 @@ int main()
     additional_info += "number of clusters: " + std::to_string(labels.size()) + "\n";
     additional_info += "objective value: " + std::to_string(clustering->get_objective_value()) + "\n";
     additional_info += "underlying data structure: " + std::string(typeid(*ae_graph).name()) + "\n";
+    additional_info += "number of calculating feature vectors: " + std::to_string(Util_Math::call_count.load()) + "\n";
     
     show_results(clustering_result, additional_info, false, false);
 

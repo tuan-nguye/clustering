@@ -14,7 +14,6 @@ extern int num_threads;
 std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*> input, float dist)
 {
     double score = 0;
-    cmp_count = 0;
     Time timer;
     timer.start();
     distance = dist;
@@ -33,7 +32,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     }
     
     bool rebuilt = false;
-    bool print_info = true;
+    bool print_info = false;
     std::string out;
 
     while(1)
@@ -95,7 +94,6 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         out.clear();
     }
 
-    std::cout << "cmp_count: " << cmp_count << std::endl;
     this->set_objective_value(score);
 
     std::unordered_map<Data*, std::string> cluster_map;
@@ -178,7 +176,6 @@ void Greedy_Joining::init_cache_operation(Cache &cache, Cluster_Container *cls_c
         float cl2_size = cl2->size();
         float f_diff = Util_Cluster::f_diff(cl1, cl2);
         float d_diff = Util_Cluster::d_diff(cl1, cl2, distance);
-        cmp_count++;
 
         if(f_diff+d_diff < 0)
         {
@@ -201,7 +198,6 @@ void Greedy_Joining::update_cache(Cache &cache, Cluster_Container *cls_container
     {
         Cluster *cl1 = std::get<0>(p), *cl2 = std::get<1>(p);
         float score_diff = Util_Cluster::score_diff(cl1, cl2, distance);
-        cmp_count++;
         
         if(score_diff < 0)
         {
@@ -264,7 +260,6 @@ void Greedy_Joining::best_pair_iterate_operation(Edge &best, Cluster_Container *
     {
         float f_diff = Util_Cluster::f_diff(cl1, cl2);
         float d_diff = Util_Cluster::d_diff(cl1, cl2, distance);
-        cmp_count++;
 
         if(f_diff+d_diff < std::get<0>(best))
         {

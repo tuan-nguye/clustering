@@ -40,7 +40,6 @@ class Greedy_Joining: public Clustering
 
         // other variables
         float distance;
-        int cmp_count;
 
         struct Tuple_Hash
         {
