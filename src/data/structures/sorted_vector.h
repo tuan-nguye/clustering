@@ -81,12 +81,6 @@ template<typename T> class Sorted_Vector
             vector.erase(vector.begin()+idx);
         }
 
-        void erase_back()
-        {
-            if(size() == 0) return;
-            vector.erase(vector.end()-1);
-        }
-
         bool contains(T &t)
         {
             return linear_search(t) != size();

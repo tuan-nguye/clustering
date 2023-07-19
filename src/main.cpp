@@ -170,12 +170,6 @@ int num_threads = std::thread::hardware_concurrency();
 
 int main()
 {
-    /*std::vector<Node<int>*> vec;
-    Default_Node<int> node(5);
-    for(int i = 0; i < 10; i++) node.add_child(new Default_Node<int>(i));
-    for(Node<int> *n : node) std::cout << n->get_value() << ", ";
-    std::cout.flush();
-    return 0;*/
     // parse data
     std::vector<Data*> data;
 

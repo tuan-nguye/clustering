@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <functional>
+#include <utility>
 
 #include "data/graph/node.h"
 #include "data/structures/sorted_vector.h"
@@ -14,21 +15,19 @@
 template <typename T> class Sorted_Node: public Node<T>
 {
     private:
+        typedef std::pair<float, Node<T>*> pair;
         std::function<float(T&, T&)> eval;
-        Sorted_Vector<Node<T>*> children;
+        Sorted_Vector<pair> children;
 
-        std::function<float(Node<T>*&, Node<T>*&)> lambda()
+        static float compare(pair &p1, pair &p2)
         {
-            T &node_val = this->get_value();
-            std::function<float(T&, T&)> function = eval;
+            return p1.first - p2.first;
+        }
 
-            std::function<float(Node<T>*&, Node<T>*&)> cmp = [&node_val, function](Node<T> *&n1, Node<T> *&n2) -> float
-            {
-                T &t1 = n1->get_value(), &t2 = n2->get_value();
-                return function(node_val, t1) - function(node_val, t2);
-            };
-            
-            return cmp;
+        pair get_pair(Node<T> *n)
+        {
+            T &node_val = this->get_value(), &new_val = n->get_value();
+            return std::make_pair(eval(node_val, new_val), n);
         }
     protected:
         typedef typename Node<T>::Node_Iterator Node_Iterator;
@@ -36,11 +35,11 @@ template <typename T> class Sorted_Node: public Node<T>
         class Sorted_Node_Iterator: public Node_Iterator
         {
             private:
-                typename std::vector<Node<T>*>::iterator it;
+                typename std::vector<pair>::iterator it;
             public:
-                Sorted_Node_Iterator(typename std::vector<Node<T>*>::iterator it): it(it) {}
+                Sorted_Node_Iterator(typename std::vector<pair>::iterator it): it(it) {}
 
-                Node<T>*& operator*() { return *it; }
+                Node<T>*& operator*() { return (*it).second; }
                 Node_Iterator& operator++()
                 {
                     ++it;
@@ -56,25 +55,26 @@ template <typename T> class Sorted_Node: public Node<T>
         Node_Iterator* create_begin() { return new Sorted_Node<T>::Sorted_Node_Iterator(children.begin()); }
         Node_Iterator* create_end() { return new Sorted_Node<T>::Sorted_Node_Iterator(children.end()); }
     public:
-        Sorted_Node(T t, std::function<float(T&, T&)> eval): Node<T>(t), eval(eval), children(lambda()) {}
+        Sorted_Node(T t, std::function<float(T&, T&)> eval): Node<T>(t), eval(eval), children(compare) {}
 
         void remove_child(Node<T> *n)
         {
-            children.erase(n);
+            children.erase(get_pair(n));
         }
 
         void add_child(Node<T> *n)
         {
-            children.push(n);
+            pair pn = get_pair(n);
+            children.push(pn);
         }
 
-        Node<T>*& back() { return children.back(); }
+        Node<T>*& back() { return children.back().second; }
         
         void pop_back() { children.pop_back(); }
 
         bool contains_child(Node<T> *n)
         {
-            return children.contains(n);
+            return children.contains(get_pair(n));
         }
         
         void clear_children() { children.clear(); }

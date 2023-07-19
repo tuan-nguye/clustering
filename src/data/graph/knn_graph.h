@@ -201,7 +201,7 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
                     T &last = top_kek.back();
                     if(distance(t, tn) < distance(t, last))
                     {
-                        top_kek.erase_back();
+                        top_kek.pop_back();
                         top_kek.push(tn);
                     }
                 }
