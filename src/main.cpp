@@ -23,6 +23,7 @@
 #include "data/graph/lazy_ann_graph.h"
 #include "data/graph/lazy_ann_graph2.h"
 #include "eval/variation_of_information.h"
+#include "data/graph/default_node.h"
 
 void print_digit_with_label(Data *d)
 {
@@ -169,6 +170,12 @@ int num_threads = std::thread::hardware_concurrency();
 
 int main()
 {
+    /*std::vector<Node<int>*> vec;
+    Default_Node<int> node(5);
+    for(int i = 0; i < 10; i++) node.add_child(new Default_Node<int>(i));
+    for(Node<int> *n : node) std::cout << n->get_value() << ", ";
+    std::cout.flush();
+    return 0;*/
     // parse data
     std::vector<Data*> data;
 
@@ -199,9 +206,9 @@ int main()
 
     Auto_Edge_Graph<Cluster*> *ae_graph;
     Distance_Graph<Cluster*> dist_graph(d, &Util_Cluster::min_distance);
-    KNN_Graph<Cluster*> knn_graph(k, cmp);
-    Lazy_ANN_Graph2<Cluster*> ann_graph2(k, 5, 20, cmp);
-    Lazy_ANN_Graph<Cluster*> ann_graph(k, 5, 20, cmp);
+    KNN_Graph<Cluster*> knn_graph(k, Util_Cluster::avg_distance);
+    Lazy_ANN_Graph2<Cluster*> ann_graph2(k, 5, 20, Util_Cluster::avg_distance);
+    Lazy_ANN_Graph<Cluster*> ann_graph(k, 5, 20, Util_Cluster::avg_distance);
     ae_graph = &dist_graph;
     ae_graph = &knn_graph;
     //ae_graph = &ann_graph2;

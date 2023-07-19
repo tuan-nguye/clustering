@@ -42,11 +42,12 @@ template<typename T> class Graph
         {
             if(!find_node(t)) return;
             Node<T> *node = get_node(t);
-            std::vector<Node<T>*> children(node->get_children());
+            std::vector<T> children;
+            get_children(children, t);
             
-            for(Node<T> *c : children)
+            for(T &tc : children)
             {
-                remove_edge(t, c->get_value());
+                remove_edge(t, tc);
             }
 
             elements.erase(t);
@@ -94,27 +95,27 @@ template<typename T> class Graph
         virtual void get_children(std::vector<T>& vec, T &t)
         {
             if(!find_node(t)) throw std::invalid_argument("t doesn't exist, can't get its children");
-            std::vector<Node<T>*>& children = get_node(t)->get_children();
-            vec.reserve(children.size());
-            for(Node<T> *c : children) vec.push_back(c->get_value());
+            Node<T> *n = get_node(t);
+            vec.reserve(n->size());
+            for(Node<T> *c : *n) vec.push_back(c->get_value());
         }
 
         virtual T& last_child(T &t)
         {
             if(!find_node(t)) throw std::invalid_argument("t doesn't exist, can't access last child");
-            return get_node(t)->get_children().back()->get_value();
+            return get_node(t)->back()->get_value();
         }
 
         virtual void pop_back_child(T &t)
         {
             if(!find_node(t)) throw std::invalid_argument("t doesn't exist, can't pop back child");
-            get_node(t)->get_children().pop_back();
+            get_node(t)->pop_back();
         }
 
         virtual int number_of_children(T &t)
         {
             if(!find_node(t)) throw std::invalid_argument("t doesn't exist, can't return number of children");
-            return get_node(t)->get_children().size();
+            return get_node(t)->size();
         }
 
         virtual bool is_child(T &t, T &c)
@@ -168,7 +169,7 @@ template<typename T> class Graph
             {
                 out += e.first->to_string() + ": [";
                 bool first = true;
-                for(Node<T> *nc : e.second->get_children())
+                for(Node<T> *nc : *e.second)
                 {
                     if(first) first = false;
                     else out += ", ";

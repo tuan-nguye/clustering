@@ -62,6 +62,11 @@ template<typename T> class Sorted_Vector
             else vector.insert(vector.begin()+idx, t);
         }
 
+        void pop_back()
+        {
+            vector.pop_back();
+        }
+
         void erase(T &t)
         {
             int idx = linear_search(t);

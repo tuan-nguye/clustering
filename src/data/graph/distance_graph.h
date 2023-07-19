@@ -69,12 +69,12 @@ template<typename T> class Distance_Graph: public Auto_Edge_Graph<T>
             std::unordered_set<Node<T>*> updated_children;
             this->remove_edge(t1, t2);
 
-            for(Node<T> *next1 : n1->get_children())
+            for(Node<T> *next1 : *n1)
             {
                 updated_children.insert(next1);
             }
 
-            for(Node<T> *next2 : n2->get_children())
+            for(Node<T> *next2 : *n2)
             {
                 updated_children.insert(next2);
             }
