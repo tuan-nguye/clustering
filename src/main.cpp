@@ -26,6 +26,7 @@
 #include "data/graph/lazy_ann_graph2.h"
 #include "eval/variation_of_information.h"
 #include "data/graph/default_node.h"
+#include "data/structures/union_find.h"
 
 void print_digit_with_label(Data *d)
 {
