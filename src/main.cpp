@@ -3,6 +3,8 @@
 #include <thread>
 #include <functional>
 #include <mutex>
+#include <utility>
+#include <unordered_map>
 
 #include "parser/csv_parser.h"
 #include "parser/ubyte_parser.h"
@@ -188,7 +190,7 @@ int main()
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm and select cluster data structure
-    float d = 2200.0f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
+    float d = 2100.0f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
     int k = 5;
     std::function<float(Cluster*&, Cluster*&)> cmp = [](Cluster *&cl1, Cluster *&cl2) -> float
     {

@@ -66,3 +66,6 @@ debugger:
 
 noop: CPPFLAGS = $(DEFAULT_CPPFLAGS)
 noop: $(OBJDIR)/$(OUTPUT) run
+
+profiling: CPPFLAGS = $(DEFAULT_CPPFLAGS) $(EXEC_CPPFLAGS) -pg
+profiling: $(OBJDIR)/$(OUTPUT) run

@@ -106,15 +106,17 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             for(T tn1 : incoming[t1])
             {
                 to_replace.push_back(tn1);
-                this->remove_edge_directed(tn1, t1);
+                Graph<T>::remove_edge_directed(tn1, t1);
             }
 
             for(T tn2 : incoming[t2])
             {
                 to_replace.push_back(tn2);
-                this->remove_edge_directed(tn2, t2);
+                Graph<T>::remove_edge_directed(tn2, t2);
             }
 
+            to_replace.erase(t1);
+            to_replace.erase(t2);
             for(T &tn : to_replace)
             {
                 if(this->number_of_children(tn) == 0) continue;
