@@ -12,6 +12,7 @@ class Cluster: public std::vector<Data*>
         float sum_of_squares = 0;
         float f = 0;
         float score = 0;
+        int elem_size = 0;
     public:
         Cluster() {}
 
@@ -47,6 +48,10 @@ class Cluster: public std::vector<Data*>
         float get_score() { return score; }
 
         void set_score(float value) { score = value; }
+
+        int size() { return elem_size; }
+
+        void set_size(int new_size) { elem_size = new_size; }
 
         std::string to_string()
         {

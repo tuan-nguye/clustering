@@ -101,6 +101,28 @@ template <typename T> class Union_Find
         {
             return elem.size();
         }
+
+        class iterator
+        {
+            private:
+                typedef typename std::vector<el_tuple>::iterator tpl_it;
+                tpl_it it;
+            public:
+                iterator(tpl_it it): it(it) {}
+
+                iterator& operator++()
+                {
+                    ++it;
+                    return *this;
+                }
+
+                T& operator*() { return std::get<0>(*it); }
+
+                bool operator!=(const iterator &other) { return it != other.it; }
+        };
+
+        iterator begin() { return iterator(elem.begin()); }
+        iterator end() { return iterator(elem.end()); }
 };
 
 #endif

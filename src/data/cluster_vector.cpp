@@ -10,10 +10,8 @@ int Cluster_Vector::size()
 // modifiers
 Cluster* Cluster_Vector::join(Cluster *cl1, Cluster *cl2, std::vector<std::pair<Cluster*, Cluster*>> &to_update)
 {
-    Cluster* joined = Util_Cluster::join(cl1, cl2, this->get_d());
+    Cluster* joined = Util_Cluster::join(cl1, cl2, this->get_d(), false);
     clusters.push_back(joined);
-    cl1->clear();
-    cl2->clear();
     clusters.erase(cl1);
     clusters.erase(cl2);
     to_update.reserve(clusters.size());
@@ -33,6 +31,7 @@ void Cluster_Vector::init_clusters_fine_grained()
         cl->push_back(d);
         cl->add_to_sum(*d);
         cl->add_to_sum_of_squares(Util_Math::sum_of_squares(*d));
+        cl->set_size(1);
         clusters.push_back(cl);
     }
 }

@@ -24,13 +24,19 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     (*cls_container)[0]->to_string();
     std::cout << "time to build container structure: " << timer.stop() << std::endl;
 
+    // cache
     Cache cache;
     if(cache_enabled)
     {
         cache.to_init.insert(cache.to_init.end(), cls_container->begin(), cls_container->end());
         this->init_cache(cache, cls_container);
     }
-    
+
+    // union find
+    Union_Find<Cluster*> uf(input.size()*2);
+    for(auto &cl : *cls_container) uf.insert(cl);
+
+    // 
     bool rebuilt = false;
     bool print_info = false;
     std::string out;
@@ -85,7 +91,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         {
             score += std::get<0>(top);
             //std::cout << "join: " << std::get<1>(top)->to_string() << " - " << std::get<2>(top)->to_string() << std::endl;
-            join_clusters(top, cache, cls_container);
+            join_clusters(top, cache, cls_container, uf);
             rebuilt = false;
         }
 
@@ -96,19 +102,19 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
 
     this->set_objective_value(score);
 
-    std::unordered_map<Data*, std::string> cluster_map;
+    std::unordered_map<Data*, std::string> data_to_label;
+    std::unordered_map<Cluster*, int> root_to_label;
+    
     int i = 0;
-    for(auto &cl : *cls_container)
+    for(Cluster *&cl : uf)
     {
-        for(auto &elem : *cl)
-        {
-            cluster_map[elem] = this->generate_label(i);
-        }
-        i++;
+        Cluster *&root = uf.find_(cl);
+        if(root_to_label.count(root) == 0) root_to_label[root] = i++;
+        for(Data *&d : *cl) data_to_label[d] = this->generate_label(root_to_label[root]);
     }
 
     //free_clusters();
-    return cluster_map;
+    return data_to_label;
 }
 
 void Greedy_Joining::init_cache(Cache &cache, Cluster_Container *cls_container)
@@ -301,10 +307,13 @@ Edge Greedy_Joining::get_next_pair_iterate(Cluster_Container *cls_container)
     return best;
 }
 
-void Greedy_Joining::join_clusters(Edge &e, Cache &cache, Cluster_Container *cls_container)
+void Greedy_Joining::join_clusters(Edge &e, Cache &cache, Cluster_Container *cls_container, Union_Find<Cluster*> &uf)
 {
     Cluster *cl1 = std::get<1>(e), *cl2 = std::get<2>(e);
     Cluster *cl_joined = cls_container->join(cl1, cl2, cache.to_update);
+    uf.insert(cl_joined);
+    uf.union_(cl_joined, cl1);
+    uf.union_(cl_joined, cl2);
 
     if(cache_enabled)
     {
