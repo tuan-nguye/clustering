@@ -47,7 +47,7 @@ float Util_Cluster::score_diff(Cluster *&cl1, Cluster *&cl2, float d)
 
 float Util_Cluster::min_distance(Cluster *&cl1, Cluster *&cl2)
 {
-    float min = 1e9;
+    float min = 1e30;
 
     for(Data *d1 : *cl1)
     {

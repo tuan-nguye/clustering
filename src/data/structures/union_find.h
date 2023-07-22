@@ -86,14 +86,16 @@ template <typename T> class Union_Find
         T& find_(T &t)
         {
             int i = idx_map[t];
-            while(std::get<1>(elem[i]) != i) i = std::get<1>(elem[i]);
+            int parent;
+            while((parent = std::get<1>(elem[i])) != i) i = parent;
             return std::get<0>(elem[i]);
         }
 
         T& find_(T &&t)
         {
             int i = idx_map[t];
-            while(std::get<1>(elem[i]) != i) i = std::get<1>(elem[i]);
+            int parent;
+            while((parent = std::get<1>(elem[i])) != i) i = parent;
             return std::get<0>(elem[i]);
         }
 
@@ -120,6 +122,17 @@ template <typename T> class Union_Find
 
                 bool operator!=(const iterator &other) { return it != other.it; }
         };
+
+        int max_height()
+        {
+            int max = 0;
+            for(el_tuple &tpl : elem)
+            {
+                if(std::get<2>(tpl) > max) max = std::get<2>(tpl);
+                //std::cout << std::get<2>(tpl) << std::endl;
+            }
+            return max;
+        }
 
         iterator begin() { return iterator(elem.begin()); }
         iterator end() { return iterator(elem.end()); }

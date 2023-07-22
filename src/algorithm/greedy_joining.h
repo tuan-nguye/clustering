@@ -37,7 +37,6 @@ class Greedy_Joining: public Clustering
         };*/
 
         // use parallelization if possible
-        bool parallel_enabled = false;
 
         // other variables
         float distance;
@@ -74,11 +73,10 @@ class Greedy_Joining: public Clustering
         void join_clusters(Edge &e, Cache &cache, Cluster_Container *cls_container, Union_Find<Cluster*> &uf);
     public:
         Greedy_Joining() {};
-        std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d);
+        std::unordered_map<Data*, std::string> execute(std::vector<Data*> &input, float d);
 
         void set_cache(bool value) { cache_enabled = value; }
         void set_container(Cluster_Container *cls_cont) { cls_container = cls_cont; }
-        void set_parallel(bool value) { parallel_enabled = value; }
 };
 
 #endif

@@ -11,18 +11,18 @@
 
 extern int num_threads;
 
-std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*> input, float dist)
+std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*> &input, float dist)
 {
     double score = 0;
     Time timer;
-    timer.start();
     distance = dist;
     
     // clear cls_container
     for(Data *d : input) cls_container->add_data(d);
+    timer.start();
     cls_container->init_clusters_fine_grained();
-    (*cls_container)[0]->to_string();
     std::cout << "time to build container structure: " << timer.stop() << std::endl;
+    (*cls_container)[0]->to_string();
 
     // cache
     Cache cache;
@@ -105,13 +105,18 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     std::unordered_map<Data*, std::string> data_to_label;
     std::unordered_map<Cluster*, int> root_to_label;
     
+    timer.start();
     int i = 0;
     for(Cluster *&cl : uf)
     {
+        if(cl->data_size() == 0) continue;
         Cluster *&root = uf.find_(cl);
         if(root_to_label.count(root) == 0) root_to_label[root] = i++;
         for(Data *&d : *cl) data_to_label[d] = this->generate_label(root_to_label[root]);
     }
+
+    std::cout << "time to get result from union-find: " << timer.stop() << std::endl;
+    std::cout << "max height of disjoint set: " << uf.max_height() << std::endl;
 
     //free_clusters();
     return data_to_label;
@@ -119,7 +124,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
 
 void Greedy_Joining::init_cache(Cache &cache, Cluster_Container *cls_container)
 {
-    if(parallel_enabled)
+    if(this->parallel_enabled())
     {
         if(cache.to_init.size() == 1) init_cache_operation(cache, cls_container, nullptr, cache.to_init[0]);
         else init_cache_parallel(cache, cls_container);
@@ -216,7 +221,7 @@ void Greedy_Joining::update_cache(Cache &cache, Cluster_Container *cls_container
 
 void Greedy_Joining::best_pair_iterate(Edge &best, Cluster_Container *cls_container)
 {
-    if(parallel_enabled) best_pair_iterate_parallel(best, cls_container);
+    if(this->parallel_enabled()) best_pair_iterate_parallel(best, cls_container);
     else best_pair_iterate_single(best, cls_container);
 }
 

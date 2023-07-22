@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "data/data.h"
+#include "util/util_math.h"
 
 #ifndef __cluster_include__
 #define __cluster_include__
@@ -12,9 +13,15 @@ class Cluster: public std::vector<Data*>
         float sum_of_squares = 0;
         float f = 0;
         float score = 0;
-        int elem_size = 0;
+        int cl_size = 0;
     public:
         Cluster() {}
+
+        Cluster(Data *d): sum_of_squares(Util_Math::sum_of_squares(*d)), cl_size(1)
+        {
+            add_to_sum(*d);
+            push_back(d);
+        }
 
         std::vector<float>& get_sum() { return sum; }
 
@@ -49,9 +56,11 @@ class Cluster: public std::vector<Data*>
 
         void set_score(float value) { score = value; }
 
-        int size() { return elem_size; }
+        int size() { return cl_size; }
 
-        void set_size(int new_size) { elem_size = new_size; }
+        void set_size(int new_size) { cl_size = new_size; }
+
+        int data_size() { return std::vector<Data*>::size(); }
 
         std::string to_string()
         {

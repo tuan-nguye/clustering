@@ -27,11 +27,7 @@ void Cluster_Vector::init_clusters_fine_grained()
 
     for(Data *d : get_data())
     {
-        Cluster *cl = new Cluster();
-        cl->push_back(d);
-        cl->add_to_sum(*d);
-        cl->add_to_sum_of_squares(Util_Math::sum_of_squares(*d));
-        cl->set_size(1);
+        Cluster *cl = new Cluster(d);
         clusters.push_back(cl);
     }
 }
