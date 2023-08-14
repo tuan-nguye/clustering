@@ -15,10 +15,8 @@ delete old clusters from heap
 */
 Cluster* Cluster_Graph::join(Cluster *cl1, Cluster *cl2, std::vector<std::pair<Cluster*, Cluster*>> &to_update)
 {
-    Cluster *combined = Util_Cluster::join(cl1, cl2, this->get_d());
+    Cluster *combined = Util_Cluster::join(cl1, cl2, this->get_d(), false);
     ae_graph->combine_nodes_into(combined, cl1, cl2, to_update);
-    cl1->clear();//delete cl1;
-    cl2->clear();//delete cl2;
     return combined;
 }
 
@@ -42,10 +40,7 @@ void Cluster_Graph::init_clusters_fine_grained()
 
     for(Data *d : get_data())
     {
-        Cluster *cl = new Cluster();
-        cl->push_back(d);
-        cl->add_to_sum(*d);
-        cl->add_to_sum_of_squares(Util_Math::sum_of_squares(*d));
+        Cluster *cl = new Cluster(d);
         clusters.push_back(cl);
     }
 

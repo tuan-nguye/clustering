@@ -9,6 +9,7 @@
 #include "data/cluster_vector.h"
 #include "data/graph/cluster_graph.h"
 #include "data/structures/queue_defs.h"
+#include "data/structures/union_find.h"
 
 #ifndef __greedy_joining_include__
 #define __greedy_joining_include__
@@ -36,28 +37,9 @@ class Greedy_Joining: public Clustering
         };*/
 
         // use parallelization if possible
-        bool parallel_enabled = false;
 
         // other variables
         float distance;
-
-        struct Tuple_Hash
-        {
-            std::size_t operator()(const std::tuple<Cluster*, Cluster*> &t) const
-            {
-                return std::hash<Cluster*>{}(std::get<0>(t)) ^ std::hash<Cluster*>{}(std::get<1>(t));
-            }
-        };
-
-        struct Tuple_Equal
-        {
-            bool operator()(const std::tuple<Cluster*, Cluster*> &t1, const std::tuple<Cluster*, Cluster*> &t2)
-            {
-                Cluster *cl11 = std::get<0>(t1), *cl12 = std::get<1>(t1);
-                Cluster *cl21 = std::get<0>(t2), *cl22 = std::get<1>(t2);
-                return (cl11 == cl21 && cl12 == cl22) || (cl11 == cl22 && cl12 == cl21);
-            }
-        };
 
         struct Cache
         {
@@ -88,14 +70,13 @@ class Greedy_Joining: public Clustering
         // get next valid pair of clusters to join
         Edge get_next_pair_pq(Cache &cache);
         Edge get_next_pair_iterate(Cluster_Container *cls_container);
-        void join_clusters(Edge &e, Cache &cache, Cluster_Container *cls_container);
+        void join_clusters(Edge &e, Cache &cache, Cluster_Container *cls_container, Union_Find<Cluster*> &uf);
     public:
         Greedy_Joining() {};
-        std::unordered_map<Data*, std::string> execute(std::vector<Data*> input, float d);
+        std::unordered_map<Data*, std::string> execute(std::vector<Data*> &input, float d);
 
         void set_cache(bool value) { cache_enabled = value; }
         void set_container(Cluster_Container *cls_cont) { cls_container = cls_cont; }
-        void set_parallel(bool value) { parallel_enabled = value; }
 };
 
 #endif

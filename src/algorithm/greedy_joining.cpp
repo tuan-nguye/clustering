@@ -11,26 +11,32 @@
 
 extern int num_threads;
 
-std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*> input, float dist)
+std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*> &input, float dist)
 {
     double score = 0;
     Time timer;
-    timer.start();
     distance = dist;
     
     // clear cls_container
     for(Data *d : input) cls_container->add_data(d);
+    timer.start();
     cls_container->init_clusters_fine_grained();
-    (*cls_container)[0]->to_string();
     std::cout << "time to build container structure: " << timer.stop() << std::endl;
+    (*cls_container)[0]->to_string();
 
+    // cache
     Cache cache;
     if(cache_enabled)
     {
         cache.to_init.insert(cache.to_init.end(), cls_container->begin(), cls_container->end());
         this->init_cache(cache, cls_container);
     }
-    
+
+    // union find
+    Union_Find<Cluster*> uf(input.size()*2);
+    for(auto &cl : *cls_container) uf.insert(cl);
+
+    // 
     bool rebuilt = false;
     bool print_info = false;
     std::string out;
@@ -85,7 +91,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         {
             score += std::get<0>(top);
             //std::cout << "join: " << std::get<1>(top)->to_string() << " - " << std::get<2>(top)->to_string() << std::endl;
-            join_clusters(top, cache, cls_container);
+            join_clusters(top, cache, cls_container, uf);
             rebuilt = false;
         }
 
@@ -96,24 +102,29 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
 
     this->set_objective_value(score);
 
-    std::unordered_map<Data*, std::string> cluster_map;
+    std::unordered_map<Data*, std::string> data_to_label;
+    std::unordered_map<Cluster*, int> root_to_label;
+    
+    timer.start();
     int i = 0;
-    for(auto &cl : *cls_container)
+    for(Cluster *&cl : uf)
     {
-        for(auto &elem : *cl)
-        {
-            cluster_map[elem] = this->generate_label(i);
-        }
-        i++;
+        if(cl->data_size() == 0) continue;
+        Cluster *&root = uf.find_(cl);
+        if(root_to_label.count(root) == 0) root_to_label[root] = i++;
+        for(Data *&d : *cl) data_to_label[d] = this->generate_label(root_to_label[root]);
     }
 
+    std::cout << "time to get result from union-find: " << timer.stop() << std::endl;
+    std::cout << "max height of disjoint set: " << uf.max_height() << std::endl;
+
     //free_clusters();
-    return cluster_map;
+    return data_to_label;
 }
 
 void Greedy_Joining::init_cache(Cache &cache, Cluster_Container *cls_container)
 {
-    if(parallel_enabled)
+    if(this->parallel_enabled())
     {
         if(cache.to_init.size() == 1) init_cache_operation(cache, cls_container, nullptr, cache.to_init[0]);
         else init_cache_parallel(cache, cls_container);
@@ -210,7 +221,7 @@ void Greedy_Joining::update_cache(Cache &cache, Cluster_Container *cls_container
 
 void Greedy_Joining::best_pair_iterate(Edge &best, Cluster_Container *cls_container)
 {
-    if(parallel_enabled) best_pair_iterate_parallel(best, cls_container);
+    if(this->parallel_enabled()) best_pair_iterate_parallel(best, cls_container);
     else best_pair_iterate_single(best, cls_container);
 }
 
@@ -301,10 +312,13 @@ Edge Greedy_Joining::get_next_pair_iterate(Cluster_Container *cls_container)
     return best;
 }
 
-void Greedy_Joining::join_clusters(Edge &e, Cache &cache, Cluster_Container *cls_container)
+void Greedy_Joining::join_clusters(Edge &e, Cache &cache, Cluster_Container *cls_container, Union_Find<Cluster*> &uf)
 {
     Cluster *cl1 = std::get<1>(e), *cl2 = std::get<2>(e);
     Cluster *cl_joined = cls_container->join(cl1, cl2, cache.to_update);
+    uf.insert(cl_joined);
+    uf.union_(cl_joined, cl1);
+    uf.union_(cl_joined, cl2);
 
     if(cache_enabled)
     {
