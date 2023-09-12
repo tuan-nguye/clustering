@@ -32,16 +32,6 @@ void Cluster_Vector::init_clusters_fine_grained()
     }
 }
 
-void Cluster_Vector::delete_clusters()
-{
-    auto it = clusters.begin();
-    while(it != clusters.end())
-    {
-        delete *it;
-        it = clusters.erase(it);
-    }
-}
-
 // access functions
 void Cluster_Vector::get_neighbours(std::vector<Cluster*>& vec, Cluster *cl)
 {
@@ -70,4 +60,10 @@ Cluster** Cluster_Vector::end()
 Cluster*& Cluster_Vector::operator[](int idx)
 {
     return clusters[idx];
+}
+
+void Cluster_Vector::clear()
+{
+    for(Cluster *cl : clusters) delete cl;
+    clusters.clear();
 }

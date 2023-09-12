@@ -26,9 +26,6 @@ class Cluster_Container
         virtual void init_clusters_fine_grained() = 0;
         //void init_clusters_random(); // needed for other algorithms
         virtual void rebuild(std::vector<std::pair<Cluster*, Cluster*>> &to_update) = 0;    // rebuild could yield new edges, for lazy data structures
-        
-        // delete clusters from heap
-        virtual void delete_clusters() = 0;
 
         // access functions
         virtual void get_neighbours(std::vector<Cluster*>& vec, Cluster *cl) = 0;
@@ -39,6 +36,8 @@ class Cluster_Container
 
         float get_d() { return d; }
         std::vector<Data*>& get_data() { return data; }
+
+        virtual void clear() = 0;
 };
 
 #endif

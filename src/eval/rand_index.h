@@ -36,6 +36,8 @@ class Rand_Index: public Evaluation
             return double(correct) / ((n*(n-1))/2l);
         }
 
+        double recall_joins = 0.0;
+        double recall_cuts = 0.0;
     public:
         double execute(std::unordered_map<Data*, std::string> prediction_map)
         {
@@ -76,8 +78,13 @@ class Rand_Index: public Evaluation
             }
 
             andres::RandError<double> rand_index(truth.begin(), truth.end(), prediction.begin());
+            recall_joins = rand_index.recallOfJoins();
+            recall_cuts = rand_index.recallOfCuts();
             return rand_index.index();
         }
+
+        double get_recall_joins() { return recall_joins; }
+        double get_recall_cuts() { return recall_cuts; }
 };
 
 #endif

@@ -106,23 +106,23 @@ void show_results(std::unordered_map<Data*, std::string> result, std::string add
         }
     }
     
-    print_result.write_to_file(out, root + "/" + "test.txt");
+    print_result.write_to_file(out, root + "/" + "mnist_60k_table.txt");
 }
 
-void repeat_and_write_csv(std::vector<Data*> data, float d_start, float d_end, float d_step)
+void repeat_and_write_csv(std::vector<Data*> &data, float d_start, float d_end, float d_step)
 {
     Print_Result_Table print_result;
-    std::string out = "d,obj_value,rand_index,adj_rand_index,variation_of_information\n";
+    std::string out = "d,obj_value,rand_index,recall_joins,recall_cuts,adj_rand_index,variation_of_information\n";
 
     Rand_Index ri = Rand_Index();
     Adjusted_Rand_Index ari = Adjusted_Rand_Index();
     Variation_Of_Information voi = Variation_Of_Information();
     std::vector<Evaluation*> eval_list = {&ri, &ari, &voi};
 
-    int k = 1;
+    int k = 5;
     Greedy_Joining gr_joining;
-    gr_joining.set_cache(true);
-    gr_joining.set_parallel(true);
+    gr_joining.set_cache(false);
+    gr_joining.set_parallel(false);
     Clustering *clustering = &gr_joining;
 
     for(float d = d_start; d <= d_end; d += d_step)
@@ -133,12 +133,12 @@ void repeat_and_write_csv(std::vector<Data*> data, float d_start, float d_end, f
         };
         KNN_Graph<Cluster*> knn_graph = KNN_Graph<Cluster*>(k, cmp);
         knn_graph.set_parallel(true);
-        Lazy_ANN_Graph<Cluster*> ann_graph = Lazy_ANN_Graph<Cluster*>(k, 5, 20, Util_Cluster::avg_distance);
-        ann_graph.set_parallel(true);
-        Cluster_Graph cls_graph = Cluster_Graph(d, &ann_graph);
+        //Lazy_ANN_Graph<Cluster*> ann_graph = Lazy_ANN_Graph<Cluster*>(k, 5, 20, Util_Cluster::avg_distance);
+        //ann_graph.set_parallel(true);
+        Cluster_Vector cls_vec = Cluster_Vector(d);
+        Cluster_Graph cls_graph = Cluster_Graph(d, &knn_graph);
         gr_joining.set_container(&cls_graph);
         std::unordered_map<Data*, std::string> result = clustering->execute(data, d);
-        cls_graph.delete_clusters();
 
         std::cout << "clustering for d = " << d << std::endl;
 
@@ -148,6 +148,13 @@ void repeat_and_write_csv(std::vector<Data*> data, float d_start, float d_end, f
         {
             out += std::to_string(metric->execute(result));
             out += ",";
+            if(metric == &ri)
+            {
+                out += std::to_string(ri.get_recall_joins());
+                out += ",";
+                out += std::to_string(ri.get_recall_cuts());
+                out += ",";
+            }
         }
         
         out.pop_back();
@@ -168,7 +175,7 @@ void repeat_and_write_csv(std::vector<Data*> data, float d_start, float d_end, f
         }
     }
 
-    print_result.write_to_file(out, root + "/" + "mnist_5k.csv");
+    print_result.write_to_file(out, root + "/" + "iris.csv");
 }
 
 // global variables
@@ -191,11 +198,11 @@ int main()
     //parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
     
     // resize the data if needed and print number of data objects
-    //data.resize(1000);
+    //data.resize(5000);
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm parameters and select cluster data structure
-    float d = 0.5f; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
+    float d = 3.2; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
     int k = 5;
     bool enable_parallel = true;
     bool enable_cache = true;
@@ -241,7 +248,7 @@ int main()
     //clustering = &gaec;
     clustering = &gr_joining;
 
-    repeat_and_write_csv(data, 0.0f, 10.0f, 0.1f);
+    repeat_and_write_csv(data, 0.0f, 4.0f, 0.1f);
     return 0;
      /*
     for(Data *d : data) cls_container->add_data(d);

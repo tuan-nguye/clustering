@@ -105,7 +105,6 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
     std::unordered_map<Data*, std::string> data_to_label;
     std::unordered_map<Cluster*, int> root_to_label;
     
-    timer.start();
     int i = 0;
     for(Cluster *&cl : uf)
     {
@@ -115,10 +114,9 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         for(Data *&d : *cl) data_to_label[d] = this->generate_label(root_to_label[root]);
     }
 
-    std::cout << "time to get result from union-find: " << timer.stop() << std::endl;
-    std::cout << "max height of disjoint set: " << uf.max_height() << std::endl;
-
     //free_clusters();
+    for(Cluster *cl : cache.invalid) delete cl;
+    cls_container->clear();
     return data_to_label;
 }
 

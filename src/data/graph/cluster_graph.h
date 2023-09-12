@@ -25,7 +25,6 @@ class Cluster_Graph: public Cluster_Container
         void init_clusters_fine_grained();
         //void init_clusters_random(); // needed for other algorithms
         void rebuild(std::vector<std::pair<Cluster*, Cluster*>> &to_update);
-        void delete_clusters();
 
         // access functions
         void get_neighbours(std::vector<Cluster*>& vec, Cluster *cl);
@@ -33,6 +32,8 @@ class Cluster_Graph: public Cluster_Container
         Cluster** begin();
         Cluster** end();
         Cluster*& operator[](int idx);
+
+        void clear();
 };
 
 #endif

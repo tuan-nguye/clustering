@@ -52,15 +52,6 @@ void Cluster_Graph::rebuild(std::vector<std::pair<Cluster*, Cluster*>> &to_updat
     ae_graph->rebuild(to_update);
 }
 
-void Cluster_Graph::delete_clusters()
-{
-    for(Cluster *cl : ae_graph->get_all_elements())
-    {
-        delete cl;
-    }
-    ae_graph->clear();
-}
-
 Cluster** Cluster_Graph::begin()
 {
     return ae_graph->get_all_elements().begin();
@@ -74,4 +65,10 @@ Cluster** Cluster_Graph::end()
 Cluster*& Cluster_Graph::operator[](int idx)
 {
     return ae_graph->get_all_elements()[idx];
+}
+
+void Cluster_Graph::clear()
+{
+    for(Cluster *cl : ae_graph->get_all_elements()) delete cl;
+    ae_graph->clear();
 }
