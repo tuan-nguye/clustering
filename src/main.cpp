@@ -28,6 +28,7 @@
 #include "data/graph/default_node.h"
 #include "data/structures/union_find.h"
 #include "algorithm/gaec.h"
+#include "util/mem_usage.h"
 
 void print_digit_with_label(Data *d)
 {
@@ -190,11 +191,11 @@ int main()
     CSV_Parser csv_parser;
     Ubyte_Parser ubyte_parser;
 
-    parser = &csv_parser;
+    //parser = &csv_parser;
     //parser->parse(data, "./res/test/test_example.data");
-    parser->parse(data, "./res/iris/iris_data.data");
-    //parser = &ubyte_parser;
-    //parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
+    //parser->parse(data, "./res/iris/iris_data.data");
+    parser = &ubyte_parser;
+    parser->parse(data, "./res/mnist/t10k-images.idx3-ubyte", "./res/mnist/t10k-labels.idx1-ubyte");
     //parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
     
     // resize the data if needed and print number of data objects
@@ -202,7 +203,7 @@ int main()
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm parameters and select cluster data structure
-    float d = 3.2; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
+    float d = 2100.0; // test: 4.0 => idx: 1, iris: 1.2 => rand_idx: 0.829799, mnist: 2200.0
     int k = 5;
     bool enable_parallel = true;
     bool enable_cache = true;
@@ -215,9 +216,9 @@ int main()
     Lazy_ANN_Graph2<Cluster*> ann_graph2(k, 5, 20, Util_Cluster::avg_distance);
     Lazy_ANN_Graph<Cluster*> ann_graph(k, 5, 20, Util_Cluster::avg_distance);
     ae_graph = &dist_graph;
-    ae_graph = &knn_graph;
+    //ae_graph = &knn_graph;
     //ae_graph = &ann_graph2;
-    //ae_graph = &ann_graph;
+    ae_graph = &ann_graph;
     ae_graph->set_parallel(enable_parallel);
     Cluster_Graph cls_graph(d, ae_graph);
     Cluster_Vector cls_vector(d);
@@ -247,9 +248,9 @@ int main()
     Clustering *clustering;
     //clustering = &gaec;
     clustering = &gr_joining;
-
+    /*
     repeat_and_write_csv(data, 0.0f, 4.0f, 0.1f);
-    return 0;
+    return 0;*/
      /*
     for(Data *d : data) cls_container->add_data(d);
     cls_container->init_clusters_fine_grained();
@@ -291,6 +292,9 @@ int main()
     additional_info += "number of calculating feature vectors: " + std::to_string(Util_Math::call_count.load()) + "\n";
     
     show_results(clustering_result, additional_info, false, false);
+
+    // memory
+    std::cout << "memory usage: " << Memory_Usage::get_in_mb() << std::endl;
 
     return 0;
 }
