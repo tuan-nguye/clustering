@@ -29,6 +29,7 @@
 #include "data/structures/union_find.h"
 #include "algorithm/gaec.h"
 #include "util/mem_usage.h"
+#include "util/data_generator.h"
 
 void print_digit_with_label(Data *d)
 {
@@ -172,16 +173,16 @@ int num_threads = std::thread::hardware_concurrency();
 
 int test()
 {
-    int size = 100000;
-    int *a = new int[size];
-    int b[size];
-    for(int i = 0; i < size; i++)
+    Data_Generator d_gen;
+    std::vector<Data*> test;
+    d_gen.generate(test, 2, 20000, 10, 15.0f);
+    std::string str;
+    for(Data *d : test)
     {
-        a[i] = i;
-        b[i] = a[i];
+        str += d->to_string() + "\n";
     }
-    delete[] a;
-    return b[size-1];
+    Print_Result_Table::write_to_file(str, "gen/random_data.txt");
+    return 0;
 }
 
 int main()
