@@ -149,7 +149,7 @@ template<typename T> class Graph
                 Node<T> *n = e.second;
                 delete n;
             }
-            //node_map.clear();
+            node_map.clear();
         }
 
         virtual void clear_edges()

@@ -110,21 +110,15 @@ void show_results(std::unordered_map<Data*, std::string> result, std::string add
     print_result.write_to_file(out, root + "/" + "mnist_60k_table.txt");
 }
 
-void repeat_and_write_csv(std::vector<Data*> &data, float d_start, float d_end, float d_step)
+void repeat_and_write_csv(std::vector<Data*> &data, Clustering *clustering, float d_start, float d_end, float d_step)
 {
     Print_Result_Table print_result;
-    std::string out = "d,obj_value,rand_index,recall_joins,recall_cuts,adj_rand_index,variation_of_information\n";
+    std::string out = "d,obj_value,rand_index,recall_joins,recall_cuts,adj_rand_index,variation_of_information,memory_consumption\n";
 
     Rand_Index ri = Rand_Index();
     Adjusted_Rand_Index ari = Adjusted_Rand_Index();
     Variation_Of_Information voi = Variation_Of_Information();
     std::vector<Evaluation*> eval_list = {&ri, &ari, &voi};
-
-    int k = 5;
-    Greedy_Joining gr_joining;
-    gr_joining.set_cache(false);
-    gr_joining.set_parallel(false);
-    Clustering *clustering = &gr_joining;
 
     for(float d = d_start; d <= d_end; d += d_step)
     {
@@ -132,13 +126,7 @@ void repeat_and_write_csv(std::vector<Data*> &data, float d_start, float d_end, 
         {
             return Util_Cluster::score_diff(cl1, cl2, d);
         };
-        KNN_Graph<Cluster*> knn_graph = KNN_Graph<Cluster*>(k, cmp);
-        knn_graph.set_parallel(true);
-        //Lazy_ANN_Graph<Cluster*> ann_graph = Lazy_ANN_Graph<Cluster*>(k, 5, 20, Util_Cluster::avg_distance);
-        //ann_graph.set_parallel(true);
-        Cluster_Vector cls_vec = Cluster_Vector(d);
-        Cluster_Graph cls_graph = Cluster_Graph(d, &knn_graph);
-        gr_joining.set_container(&cls_graph);
+
         std::unordered_map<Data*, std::string> result = clustering->execute(data, d);
 
         std::cout << "clustering for d = " << d << std::endl;
@@ -158,7 +146,7 @@ void repeat_and_write_csv(std::vector<Data*> &data, float d_start, float d_end, 
             }
         }
         
-        out.pop_back();
+        //out += std::to_string(Memory_Usage::get_in_mb());
         out += "\n";
     }
 
@@ -182,6 +170,20 @@ void repeat_and_write_csv(std::vector<Data*> &data, float d_start, float d_end, 
 // global variables
 int num_threads = std::thread::hardware_concurrency();
 
+int test()
+{
+    int size = 100000;
+    int *a = new int[size];
+    int b[size];
+    for(int i = 0; i < size; i++)
+    {
+        a[i] = i;
+        b[i] = a[i];
+    }
+    delete[] a;
+    return b[size-1];
+}
+
 int main()
 {
     // parse data, choose between different inputs
@@ -199,7 +201,10 @@ int main()
     //parser->parse(data, "./res/mnist/train-images.idx3-ubyte", "./res/mnist/train-labels.idx1-ubyte");
     
     // resize the data if needed and print number of data objects
-    //data.resize(5000);
+    int data_size = 2000;
+    data_size = data_size > data.size() ? data.size() : data_size;
+    for(int i = data_size; i < data.size(); i++) delete data[i];
+    data.resize(data_size);
     std::cout << "number of data objects: " << data.size() << std::endl;
 
     // configure algorithm parameters and select cluster data structure
@@ -246,12 +251,13 @@ int main()
     gaec.set_parallel(enable_parallel);
 
     Clustering *clustering;
-    //clustering = &gaec;
+    clustering = &gaec;
     clustering = &gr_joining;
     /*
-    repeat_and_write_csv(data, 0.0f, 4.0f, 0.1f);
-    return 0;*/
-     /*
+    repeat_and_write_csv(data, clustering, 0.0f, 1000.0f, 200.0f);
+    return 0;
+    */
+    /*
     for(Data *d : data) cls_container->add_data(d);
     cls_container->init_clusters_fine_grained();
     std::cout << knn_graph.size() << std::endl;
@@ -274,27 +280,31 @@ int main()
 
     timer.start();
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
+    
     double exec_time = timer.stop();
 
     std::unordered_set<std::string> labels;
+    /*
     for(auto &entry : clustering_result)
     {
         //std::cout << "cl_label: " << entry.second << ", " << entry.first->to_string() << std::endl;
         labels.insert(entry.second);
-    }
+    }*/
 
     std::string additional_info;
 
     additional_info += "execution time: " + std::to_string(exec_time) + "s\n";
+    additional_info += "memory consumption: " + std::to_string(Memory_Usage::get_in_gb()) + " GB\n";
     additional_info += "number of clusters: " + std::to_string(labels.size()) + "\n";
     additional_info += "objective value: " + std::to_string(clustering->get_objective_value()) + "\n";
     additional_info += "underlying data structure: " + std::string(typeid(*ae_graph).name()) + "\n";
     additional_info += "number of calculating feature vectors: " + std::to_string(Util_Math::call_count.load()) + "\n";
-    
+
     show_results(clustering_result, additional_info, false, false);
 
-    // memory
-    std::cout << "memory usage: " << Memory_Usage::get_in_mb() << std::endl;
+    // free stuff
+    for(Data *d : data) delete d;
+    data.clear();
 
     return 0;
 }

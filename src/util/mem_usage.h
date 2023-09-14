@@ -28,7 +28,7 @@ class Memory_Usage
 
         static double get_in_gb()
         {
-            return get_in_gb()/1024.0;
+            return get_in_mb()/1024.0;
         }
 };
 
