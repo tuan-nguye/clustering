@@ -6,6 +6,15 @@
 #ifndef __maptor_include__
 #define __maptor_include__
 
+/**
+ * @brief a class that works like a vector and a set at the same time. It combines
+ * the advantages of a vector with the advantages of a set. There are no duplicates
+ * allowed and iterating through all the elements is as fast as through a vector.
+ * insertion: O(n)
+ * deletion:  O(n)
+ * 
+ * @tparam T 
+ */
 template<typename T> class Maptor
 {
     private:

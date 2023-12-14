@@ -4,12 +4,27 @@
 #ifndef __sorted_vector_include__
 #define __sorted_vector_include__
 
+
+/**
+ * @brief flat sorted vector
+ * it uses binary search for inserting elements
+ * but linear search for deletion because evaluating cmp takes a lot of time (due to clustering cost implementation)
+ * so that a simple check for equality is faster. The performance is pretty good if the size of the vector is limited.
+ * @tparam T 
+ */
 template<typename T> class Sorted_Vector
 {
     private:
         std::vector<T> vector;
         std::function<float(T&, T&)> cmp;
 
+        /**
+         * @brief find the index of an element by using binary search
+         * 
+         * @param t element
+         * @return int: the index where the element is stored or the first element that
+         * is larger than t if it doesn't exist 
+         */
         int binary_search(T &t)
         {
             if(vector.empty()) return 0;
@@ -18,7 +33,6 @@ template<typename T> class Sorted_Vector
             while(l <= r)
             {
                 int m = (l+r)/2;
-                //std::cout << "(l, m, r, size) = " << "(" << l << ", " << m << ", " << r << ", " << vector.size() << ")" << std::endl;
                 T &tm = vector[m];
                 if(tm == t) return m;
 
@@ -39,6 +53,12 @@ template<typename T> class Sorted_Vector
             return l;
         }
 
+        /**
+         * @brief search for an element by simply iterating through the vector
+         * 
+         * @param t 
+         * @return int 
+         */
         int linear_search(T &t)
         {
             int idx = 0;

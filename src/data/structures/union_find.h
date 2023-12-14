@@ -5,6 +5,12 @@
 #ifndef __union_find_include__
 #define __union_find_include__
 
+/**
+ * @brief union-find or disjoint-set data structure
+ * The tree is balanced using the depth of the trees. The rank helps keeping the depth
+ * of the resulting tree to be as small as possible
+ * @tparam T 
+ */
 template <typename T> class Union_Find
 {
     private:

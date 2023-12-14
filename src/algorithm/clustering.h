@@ -16,7 +16,10 @@ class Clustering
     protected:
         void set_objective_value(double val) { objective_value = val; }
     public:
+        // execute the clustering algorithm provided the input data and the distance d
         virtual std::unordered_map<Data*, std::string> execute(std::vector<Data*> &input, float d) = 0;
+        
+        // generate a label for each postive number
         std::string generate_label(int n)
         {
             std::string label;

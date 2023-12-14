@@ -14,9 +14,6 @@
 #ifndef __greedy_joining_include__
 #define __greedy_joining_include__
 
-//typedef std::tuple<float, Cluster*, Cluster*> Edge;
-//typedef std::priority_queue<Edge, std::vector<Edge>, std::greater<Edge>> MinPriorityQueue;
-
 class Greedy_Joining: public Clustering
 {
     private:
@@ -28,15 +25,6 @@ class Greedy_Joining: public Clustering
         // selects container type, default is vector
         // graphs are the performance options
         Cluster_Container *cls_container;
-        /* should actually be a map that stores type as key and
-        the class as value to invoke the class's constructor inside
-        the execution function but no idead how it works
-        std::unordered_map<container_type, Cluster_Container> container_type_map =
-        {
-            { container_type::VECTOR, Cluster_Vector()},
-        };*/
-
-        // use parallelization if possible
 
         // other variables
         float distance;
