@@ -11,6 +11,20 @@
 
 extern int num_threads;
 
+/**
+ * @brief greedy joining implementation
+ * It works by initializing each data element in its own cluster. A cost function indicates
+ * the objective value of a clustering. Each join operation can either increase or decrease
+ * the value. The algorithm chooses a pair of clusters at each iteration that improves the overall
+ * cost the most (by decreasing the objective value), hence the 'greedy'. The algorithm continues
+ * as long as the clustering can be improved. If any join operation would lead to a worse result
+ * it stops. The selection of the next pair to join changes depending on the enabled options. It's
+ * possible to use a cache, any of the available data structures, and parallelization.
+ * @param input input data
+ * @param dist distance threshold needed by the cost function
+ * @return std::unordered_map<Data*, std::string> a map assigning each data element a string label
+ */
+
 std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*> &input, float dist)
 {
     double score = 0;
@@ -43,22 +57,6 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
 
     while(1)
     {
-        /*
-        std::cout << "outgoing" << std::endl;
-        for(Cluster *cl : *cls_container)
-        {
-            std::vector<Cluster*> neighbours;
-            cls_container->get_neighbours(neighbours, cl);
-            std::cout << cl->to_string() << ", children: ";
-            std::cout << neighbours.size();
-            for(Cluster *neigh : neighbours)
-            {
-                std::cout << neigh->to_string() << ", ";
-            }
-            std::cout << std::endl;
-        }
-        */
-
         int num_cls = cls_container->size();
 
         Edge top;
@@ -71,10 +69,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
             best_pair_iterate(top, cls_container);
         }
 
-        //std::cout << "cl1 exists: " << cls_graph.find(std::get<1>(top)) << ", cl2 exists: " << cls_graph.find(std::get<2>(top)) << std::endl;
         out += "number of clusters: " + std::to_string(cls_container->size()) + ", score improvement: " + std::to_string(std::get<0>(top));
-
-        //for(Cluster *cl : cls_graph) std::cout << cl->to_string() << std::endl;
 
         // if the score is worse then stop
         if(std::get<0>(top) >= 0)
@@ -90,7 +85,6 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         } else
         {
             score += std::get<0>(top);
-            //std::cout << "join: " << std::get<1>(top)->to_string() << " - " << std::get<2>(top)->to_string() << std::endl;
             join_clusters(top, cache, cls_container, uf);
             rebuilt = false;
         }
@@ -102,6 +96,7 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
 
     this->set_objective_value(score);
 
+    // assign and generate labels to the data points using the union-find data structure
     std::unordered_map<Data*, std::string> data_to_label;
     std::unordered_map<Cluster*, int> root_to_label;
     
@@ -114,12 +109,21 @@ std::unordered_map<Data*, std::string> Greedy_Joining::execute(std::vector<Data*
         for(Data *&d : *cl) data_to_label[d] = this->generate_label(root_to_label[root]);
     }
 
-    //free_clusters();
+    // free all clusters on the heap
     for(Cluster *cl : cache.invalid) delete cl;
     cls_container->clear();
     return data_to_label;
 }
 
+
+/**
+ * @brief initialize the empty cache with values
+ * the number of inserted elements depends on the underlying container
+ * create multiple threads if parallelization is enabled
+ * 
+ * @param cache cache struct
+ * @param cls_container cluster container with all the available clusters
+ */
 void Greedy_Joining::init_cache(Cache &cache, Cluster_Container *cls_container)
 {
     if(this->parallel_enabled())
@@ -173,15 +177,10 @@ void Greedy_Joining::init_cache_parallel_thread(Cache &cache, Cluster_Container 
 void Greedy_Joining::init_cache_operation(Cache &cache, Cluster_Container *cls_container, std::mutex *mtx, Cluster *cl1)
 {
     float cl1_size = cl1->size();
-    //std::cout << i++ << std::endl;
     std::vector<Cluster*> neighbours1;
     cls_container->get_neighbours(neighbours1, cl1);
-    //std::cout << "num of neighbours1: " << neighbours1.size() << std::endl;
-    //std::cout << cl1->to_string() << ", neighbours1: ";
     for(Cluster *cl2 : neighbours1)
     {
-        //std::cout << cl2->to_string() << ", ";
-        
         float cl2_size = cl2->size();
         float f_diff = Util_Cluster::f_diff(cl1, cl2);
         float d_diff = Util_Cluster::d_diff(cl1, cl2, distance);
@@ -198,9 +197,15 @@ void Greedy_Joining::init_cache_operation(Cache &cache, Cluster_Container *cls_c
            }
         }
     }
-    //std::cout << std::endl;
 }
 
+/**
+ * @brief after joining some nodes and edges are deleted from the container and some are added. This function
+ * calculates and adds the missing values into the cache. For this, all the entries in cache.to_update are considered
+ * 
+ * @param cache 
+ * @param cls_container 
+ */
 void Greedy_Joining::update_cache(Cache &cache, Cluster_Container *cls_container)
 {
     for(std::pair<Cluster*, Cluster*> &p : cache.to_update)
@@ -217,6 +222,14 @@ void Greedy_Joining::update_cache(Cache &cache, Cluster_Container *cls_container
     cache.to_update.clear();
 }
 
+
+/**
+ * @brief iterate through all possible edges of the container, calculate the objective value gain,
+ * and select the best pair of clusters by storing them in the variable best. Parallelization is possible.
+ * 
+ * @param best the currently best edge/pair of clusters to join
+ * @param cls_container 
+ */
 void Greedy_Joining::best_pair_iterate(Edge &best, Cluster_Container *cls_container)
 {
     if(this->parallel_enabled()) best_pair_iterate_parallel(best, cls_container);
@@ -289,6 +302,15 @@ void Greedy_Joining::best_pair_iterate_operation(Edge &best, Cluster_Container *
     }
 }
 
+
+/**
+ * @brief When making use of a cache, this function gets the next pair of clusters to join.
+ * Some elements in the cache can be invalid if the nodes have been joined in previous iterations,
+ * so the top element of the cache is removed until a valid edge has been found.
+ * 
+ * @param cache 
+ * @return Edge 
+ */
 Edge Greedy_Joining::get_next_pair_pq(Cache &cache)
 {
     Edge top;
@@ -303,6 +325,12 @@ Edge Greedy_Joining::get_next_pair_pq(Cache &cache)
     return top;
 }
 
+/**
+ * @brief get the next pair to join by iteration. This should be used if a cache is not used.
+ * 
+ * @param cls_container 
+ * @return Edge 
+ */
 Edge Greedy_Joining::get_next_pair_iterate(Cluster_Container *cls_container)
 {
     Edge best;
@@ -310,6 +338,17 @@ Edge Greedy_Joining::get_next_pair_iterate(Cluster_Container *cls_container)
     return best;
 }
 
+
+/**
+ * @brief join the clusters in the edge e. And update all the other data structures, such as the cache
+ * by invalidating the deleted clusters and marking the edges that need to be updated. After joining,
+ * the union-find data structure is used to join the clusters.
+ * 
+ * @param e the edge that needs to be joined
+ * @param cache 
+ * @param cls_container 
+ * @param uf union-find
+ */
 void Greedy_Joining::join_clusters(Edge &e, Cache &cache, Cluster_Container *cls_container, Union_Find<Cluster*> &uf)
 {
     Cluster *cl1 = std::get<1>(e), *cl2 = std::get<2>(e);

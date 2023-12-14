@@ -92,7 +92,6 @@ template<typename T> class Lazy_ANN_Graph2: public KNN_Graph<T>
         {
             std::lock_guard<std::mutex> lock_map(resize_lock);
             std::string out = "lock layer " + std::to_string(l_c) + "\n";
-            //std::cout << out;
             std::cout.flush();
             layer_lock[l_c].lock();
         }
@@ -109,7 +108,6 @@ template<typename T> class Lazy_ANN_Graph2: public KNN_Graph<T>
         void lock_element(T &t)
         {
             std::string out = "lock element " + t->to_string() + "\n";
-            //std::cout << out;
             std::cout.flush();
             elem_lock[t].lock();
         }
@@ -118,7 +116,6 @@ template<typename T> class Lazy_ANN_Graph2: public KNN_Graph<T>
         {
             elem_lock[t].unlock();
             std::string out = "unlock element " + t->to_string() + "\n";
-            //std::cout << out;
             std::cout.flush();
         }
 
@@ -138,7 +135,6 @@ template<typename T> class Lazy_ANN_Graph2: public KNN_Graph<T>
             }
 
             std::vector<T> nearest_elements;
-            //std::cout << "insert enter, (l, L) = " << l << ", " << L << std::endl;
 
             T ep = enter_point;
 
@@ -307,7 +303,6 @@ template<typename T> class Lazy_ANN_Graph2: public KNN_Graph<T>
                 out += "{" + std::to_string(i) + ": (" + std::to_string(hnsw[i]->size()) + ", " + std::to_string(hnsw[i]->size_edges()) + ")}";
             }
             out += "}";
-            //std::cout << out;
             std::cout.flush();
         }
     protected:
@@ -322,7 +317,6 @@ template<typename T> class Lazy_ANN_Graph2: public KNN_Graph<T>
             
             for(int i = 0; i < hnsw.size(); i++)
             {
-                //std::cout << "layer " << i << std::endl;
                 get_layer_graph_guarded(i)->print_structure();
             }
             if(mtx != nullptr) mtx->unlock();
@@ -330,13 +324,6 @@ template<typename T> class Lazy_ANN_Graph2: public KNN_Graph<T>
 
         void build_graph()
         {
-            /*std::unordered_map<int, int> count;
-            for(int i = 0; i < 1000; i++) count[calculate_level()]++;
-
-            for(auto &e : count) std::cout << e.first << ": " << e.second << "\n";
-            std::cout.flush();
-
-            return;*/
             for(T &t : this->get_all_elements()) elem_lock[t];
             Auto_Edge_Graph<T>::build_graph();
             // call knn_search for every node

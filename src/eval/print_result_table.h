@@ -28,7 +28,6 @@ class Print_Result_Table
             int diff = length-str.length();
             if(diff <= 0) return;
             int right_pad = diff/2, left_pad = length-right_pad;
-            //std::cout << "pad_centered, left_pad = " << left_pad << ", right_pad = " << right_pad << std::endl;
             pad_left(str, left_pad, c);
             str.append(right_pad, c);
         }
@@ -80,7 +79,6 @@ class Print_Result_Table
                 line += vertical_border;
                 line.append(label_orig);
             }
-            //std::cout << line << std::endl;
             out += line + '\n';
             line.clear();
 
@@ -98,7 +96,6 @@ class Print_Result_Table
                 }
                 pad_centered(label_clus, first_cell_width, pad_char);
                 line.insert(0, label_clus);
-                //std::cout << row_border << '\n' << line << std::endl;
                 out += row_border + '\n' + line + '\n';
             }
 
@@ -119,7 +116,6 @@ class Print_Result_Table
                 correct += max;
             }
 
-            //std::cout << "\ncorrect: " << float(correct)/total*100 << "%" << std::endl;
             out += "\ncorrect: " + std::to_string(float(correct)/total*100) + '%';
             return out;
         }

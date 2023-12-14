@@ -233,12 +233,6 @@ int main()
     cls_container = &cls_graph;
     //cls_container = &cls_vector;
 
-    /*
-    for(Data *d : data) cls_container->add_data(d);
-    cls_container->init_clusters_fine_grained();
-    return 0;
-    */
-
     // choose algorithm
     Greedy_Joining gr_joining;
     gr_joining.set_cache(enable_cache);
@@ -254,30 +248,6 @@ int main()
     Clustering *clustering;
     clustering = &gaec;
     clustering = &gr_joining;
-    /*
-    repeat_and_write_csv(data, clustering, 0.0f, 1000.0f, 200.0f);
-    return 0;
-    */
-    /*
-    for(Data *d : data) cls_container->add_data(d);
-    cls_container->init_clusters_fine_grained();
-    std::cout << knn_graph.size() << std::endl;
-
-    for(Cluster *cl : *cls_container)
-    {
-        std::vector<Cluster*> neighbours;
-        cls_container->get_neighbours(neighbours, cl);
-        std::cout << cl->to_string() << "\nchildren: ";
-        //std::cout << neighbours.size() << std::endl;
-        for(Cluster *neigh : neighbours)
-        {
-            std::cout << neigh->to_string() << ", ";
-        }
-        std::cout << std::endl << std::endl;
-    }
-
-    return 0;
-    */
 
     timer.start();
     std::unordered_map<Data*, std::string> clustering_result = clustering->execute(data, d);
@@ -285,12 +255,6 @@ int main()
     double exec_time = timer.stop();
 
     std::unordered_set<std::string> labels;
-    /*
-    for(auto &entry : clustering_result)
-    {
-        //std::cout << "cl_label: " << entry.second << ", " << entry.first->to_string() << std::endl;
-        labels.insert(entry.second);
-    }*/
 
     std::string additional_info;
 

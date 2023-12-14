@@ -42,7 +42,6 @@ template <typename T> class Node
                 {
                     if(n_it != nullptr)
                     {
-                        //std::cout << "freed iterator" << std::endl;
                         delete n_it;
                     }
                 }

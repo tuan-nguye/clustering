@@ -35,24 +35,6 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             float b_limit = 0.0f;
             if(children1.size() != 0) b_limit += distance(t1, children1.back());
             if(children2.size() != 0) b_limit += distance(t2, children2.back());
-            /*
-            std::cout << "join: t1 = " << t1->to_string() << " and t2 = " << t2->to_string() << std::endl;
-            std::vector<T> inc1, inc2;
-            for(Node<T> *n1 : incoming[n1]) inc1.push_back(n1->get_value());
-            for(Node<T> *n2 : incoming[n2]) inc2.push_back(n2->get_value());
-            std::cout << "incoming[n1] = ";
-            print_collection(inc1.begin(), inc1.end());
-            std::cout << "incoming[n2] = ";
-            print_collection(inc2.begin(), inc2.end());
-            std::vector<T> ch1, ch2;
-            this->get_children(ch1, t1);
-            this->get_children(ch2, t2);
-            std::cout << "outgoing[n1] = ";
-            print_collection(ch1.begin(), ch1.end());
-            std::cout << "outgoing[n2] = ";
-            print_collection(ch2.begin(), ch2.end());
-            std::cout.flush();
-            */
 
             // outgoing
 
@@ -71,11 +53,7 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             }
             outgoing.erase(t1);
             outgoing.erase(t2);
-            /*
-            std::cout << "outgoing union\n";
-            for(T &t : outgoing) std::cout << t->to_string() << ", ";
-            std::cout << std::endl;
-            */
+            
             if(outgoing.size() >= k)
             {
                 std::vector<T> topk;
@@ -237,20 +215,9 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
 
         virtual void combine_nodes_into(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
         {
-            /*
-            std::cout << "\nincoming" << std::endl;
-            for(auto &e : incoming)
-            {
-                std::cout << e.first->get_value()->to_string() << ", " << e.second.size() << "children: ";
-                for(Node<T> *n : e.second) std::cout << n->get_value()->to_string() << ", ";
-                std::cout << std::endl;
-            }
-            */
-
             this->add_node(c);
             update_outgoing_edges(c, t1, t2, to_update);
 
-            //std::cout << "joined children: " << nc->get_children().size() << std::endl;
             // incoming
             update_incoming_edges(c, t1, t2, to_update);
             

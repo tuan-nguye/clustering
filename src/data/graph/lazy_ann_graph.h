@@ -137,7 +137,6 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
             delete hnsw;
 
             std::cout << "hnsw built, number of edges = " << this->size_edges() << std::endl;
-            //this->print_structure();
         }
 
         void update_outgoing_edges_all(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)

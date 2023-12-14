@@ -9,12 +9,21 @@
 
 extern int num_threads;
 
+/**
+ * @brief greedy additive edge contraction algorithm
+ * First create a complete graph and add a weight which indicates the distance between
+ * each cluster. Then use the gaec implementation from the included library. To join the clusters
+ * a union-find structure is used.
+ * @param input the input data
+ * @param d the distance threshold needed for evaluating the cost between clusters when joining
+ * @return std::unordered_map<Data*, std::string> which is a map that assigns each data point a string label
+ */
 std::unordered_map<Data*, std::string> Greedy_Additive_EC::execute(std::vector<Data*> &input, float d)
 {
     std::cout << "calculating edge weights..." << std::endl;
     andres::graph::Graph<> graph;
     size_t input_size = input.size();
-    std::vector<float> weights/*(input_size*(input_size-1)/2)*/;
+    std::vector<float> weights;
     int idx_w = 0;
     graph.insertVertices(input_size);
     add_weighted_edge(input, graph, weights);
@@ -29,13 +38,12 @@ std::unordered_map<Data*, std::string> Greedy_Additive_EC::execute(std::vector<D
     andres::graph::multicut::greedyAdditiveEdgeContraction(graph, weights, edge_labels);
 
     float score = 0.0f;
-    // iterate through labels and edges
+    // iterate through labels and edges and join elements that appear in the same cluster
     for(int i = 0; i < graph.numberOfEdges(); i++)
     {
         int v1 = graph.vertexOfEdge(i, 0), v2 = graph.vertexOfEdge(i, 1);
         if(edge_labels[i] == 0)
         {
-            //std::cout << int(edge_labels[i]) << ": " << input[v1]->to_string() << " - " << input[v2]->to_string() << ", weight = " << weights[i] << std::endl;
             uf.union_(input[v1], input[v2]);
             score += weights[i];
         }
@@ -58,6 +66,13 @@ std::unordered_map<Data*, std::string> Greedy_Additive_EC::execute(std::vector<D
     return result;
 }
 
+/**
+ * @brief calculate the weights for each edge and store them in a std::vector
+ * The function creates multiple threads for parallelization if it was enabled.
+ * @param input the input data, used to calculate the weights
+ * @param graph the graph containing the nodes and edges
+ * @param weights output vector
+ */
 void Greedy_Additive_EC::add_weighted_edge(std::vector<Data*> &input, andres::graph::Graph<> &graph, std::vector<float> &weights)
 {
     if(!this->parallel_enabled()) add_weighted_edge_single(input, graph, weights);
@@ -95,6 +110,18 @@ void Greedy_Additive_EC::add_weighted_edge_thread(std::vector<Data*> &input, and
     }
 }
 
+/**
+ * @brief function where the weights are actually calculated and stored in the vector
+ * since multiple threads can access the output vector, it needs to be synchronized with a mutex.
+ * For an index i it iterates through all the data points following i in the input vector. It doesn't
+ * start at i = 0 to save time because symmetric edges are not added. That means each edge is only added
+ * once and not twice.
+ * @param input 
+ * @param graph 
+ * @param weights 
+ * @param i index of the current data element
+ * @param mtx mutex for synchronization
+ */
 void Greedy_Additive_EC::add_weighted_edge_operation(std::vector<Data*> &input, andres::graph::Graph<> &graph, std::vector<float> &weights, int i, std::mutex &mtx)
 {
     for(int j = i+1; j < input.size(); j++)

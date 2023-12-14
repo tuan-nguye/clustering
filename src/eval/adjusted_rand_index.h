@@ -73,12 +73,6 @@ class Adjusted_Rand_Index: public Evaluation
                     sum_entries_2 += sum*(sum-1)/2;
                 }
             }
-            /*
-            std::cout << "sum_entries_2: " << sum_entries_2 << "\n";
-            std::cout << "sum_orig_2: " << sum_orig_2 << "\n";
-            std::cout << "sum_clus_2: " << sum_clus_2 << "\n";
-            std::cout << "n_2: " << n_2 << "\n";
-            std::cout.flush();*/
 
             return double(sum_entries_2-(sum_orig_2*sum_clus_2)/n_2)/(0.5*(sum_orig_2+sum_clus_2) - (sum_orig_2*sum_clus_2)/n_2);
         }

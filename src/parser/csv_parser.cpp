@@ -19,7 +19,6 @@ void CSV_Parser::parse(std::vector<Data*> &data, std::string file_path)
     {
         if(line.empty()) continue;
         
-        //std::cout << line << std::endl;
         std::vector<std::string> vals;
 
         int i = 0;

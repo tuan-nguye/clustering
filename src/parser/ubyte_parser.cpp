@@ -23,23 +23,17 @@ void Ubyte_Parser::parse(std::vector<Data*> &data, std::string datafile_path, st
     int magic_number_data = buffer_to_int(buffer);
     labelfile.read(buffer, 4);
     int magic_number_label = buffer_to_int(buffer);
-    //std::cout << "Magic number data: " << magic_number_data << std::endl;
-    //std::cout << "Magic number label: " << magic_number_label << std::endl;
 
     datafile.read(buffer, 4);  // read the number of images (4 bytes)
     int num_images = buffer_to_int(buffer);
     labelfile.read(buffer, 4);
     int num_labels = buffer_to_int(buffer);
-    //std::cout << "Number of images: " << num_images << std::endl;
-    //std::cout << "Number of labels: " << num_labels << std::endl;
 
     datafile.read(buffer, 4);  // read the number of rows (4 bytes)
     int num_rows = buffer_to_int(buffer);
-    //std::cout << "Number of rows: " << num_rows << std::endl;
 
     datafile.read(buffer, 4);  // read the number of columns (4 bytes)
     int num_cols = buffer_to_int(buffer);
-    //std::cout << "Number of columns: " << num_cols << std::endl;
 
     if(num_images != num_labels)
     {
@@ -49,7 +43,6 @@ void Ubyte_Parser::parse(std::vector<Data*> &data, std::string datafile_path, st
 
     // read the image data
     for (int i = 0; i < num_images; ++i) {
-        //std::cout << "Image " << i + 1 << ":" << std::endl;
         unsigned char c;
         labelfile.read((char*) &c, 1);
         std::string label = std::to_string(c);

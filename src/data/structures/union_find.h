@@ -129,7 +129,6 @@ template <typename T> class Union_Find
             for(el_tuple &tpl : elem)
             {
                 if(std::get<2>(tpl) > max) max = std::get<2>(tpl);
-                //std::cout << std::get<2>(tpl) << std::endl;
             }
             return max;
         }
