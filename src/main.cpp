@@ -62,8 +62,6 @@ void print_some_info_about_distances(std::vector<Data*> &data)
             {
                 count_same++;
                 sum_same += d;
-                //print_digit_with_label(d1);
-                //print_digit_with_label(d2);
             } else
             {
                 count_diff++;
@@ -169,6 +167,7 @@ void repeat_and_write_csv(std::vector<Data*> &data, Clustering *clustering, floa
 }
 
 // global variables
+// number of threads to use for parallelization
 int num_threads = std::thread::hardware_concurrency();
 
 int test()

@@ -11,7 +11,11 @@
 #ifndef __knn_graph_include__
 #define __knn_graph_include__
 
-
+/**
+ * @brief K-Nearest-Neighbours Graph. Edges are automatically added.
+ * 
+ * @tparam T 
+ */
 template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
 {
     private:
@@ -25,6 +29,16 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
         std::unordered_map<T, std::unordered_set<T>> incoming;
 
     protected:
+        /**
+         * @brief A function that tries to add outgoing edges after joining t1 and t2 into c.
+         * The idea is to save time from searching through all nodes by reusing the outgoing edges
+         * of t1 and t2.
+         * 
+         * @param c 
+         * @param t1 
+         * @param t2 
+         * @param to_update 
+         */
         virtual void update_outgoing_edges(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
         {
             std::vector<T> children1, children2;
@@ -66,6 +80,14 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             }
         }
 
+        /**
+         * @brief if not enough outgoing edges could be added, search through all nodes
+         * 
+         * @param c 
+         * @param t1 
+         * @param t2 
+         * @param to_update 
+         */
         virtual void update_outgoing_edges_all(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
         {
             std::unordered_set<T> exclude = {c, t1, t2};
@@ -75,6 +97,17 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
                 add_edge_directed_update(c, t, to_update);
         }
 
+        /**
+         * @brief when joining t1 and t2, the according nodes are removed from the graph. Incoming
+         * edges are going to be removed and therefore have to be replaced. If the distance
+         * towards the newly joined node c is smaller than towards either t1 or t2, a new edge to
+         * c can be used to replace the edge.
+         * 
+         * @param c 
+         * @param t1 
+         * @param t2 
+         * @param to_update 
+         */
         void update_incoming_edges(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
         {
             std::unordered_set<T> excluded_values = {c, t1, t2};
@@ -105,6 +138,13 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             }
         }
 
+        /**
+         * @brief searches through all nodes to find an edge to replace the deleted incoming edge.
+         * 
+         * @param t 
+         * @param exclude 
+         * @param to_update 
+         */
         virtual void replace_incoming_edges_all(T &t, std::unordered_set<T> exclude, std::vector<std::pair<T, T>> &to_update)
         {
             // erase elements that are children already or itself
@@ -119,11 +159,23 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             add_edge_directed_update(t, top1[0], to_update);
         }
 
+        /**
+         * @brief Create a node object, factory method. Sorted by distance in ascending order
+         * 
+         * @param t 
+         * @return Node<T>* 
+         */
         Node<T>* create_node(T &t)
         {
             return new Sorted_Node<T>(t, distance);
         }
 
+        /**
+         * @brief find the closest k elements to t and add them as children
+         * 
+         * @param t 
+         * @param mtx 
+         */
         virtual void add_edges_operation(T &t, std::mutex *mtx)
         {
             std::vector<T> topk;
@@ -195,12 +247,33 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             //std::cout << "k: " << k << ", actual: " << top_elements.size() << std::endl;
         }
 
+        /**
+         * @brief Get the k constant value
+         * 
+         * @return int 
+         */
         int get_k() { return k; }
         
+        /**
+         * @brief Get the distance threshold called d
+         * 
+         * @return int 
+         */
         int get_d() { return dist; }
 
+        /**
+         * @brief Get the distance function
+         * 
+         * @return std::function<float(T&, T&)>& 
+         */
         std::function<float(T&, T&)>& get_distance_function() { return distance; }
     public:
+        /**
+         * @brief Construct a new knn graph object
+         * 
+         * @param k number of children each node has
+         * @param distance threshold used for the distance function
+         */
         KNN_Graph(int k, std::function<float(T&, T&)> distance): k(k), distance(distance) {}
 
         // 1. create new joined node
@@ -212,24 +285,17 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
         //    both will be deleted so replace them
         //    if possible add c, if not then iterate through all
         //    to find the one to replace it with
-
         virtual void combine_nodes_into(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
         {
+            // add new joined node c and add its new edges
             this->add_node(c);
             update_outgoing_edges(c, t1, t2, to_update);
-
-            // incoming
             update_incoming_edges(c, t1, t2, to_update);
             
-            
-            
+            // remove the original nodes from the graph
             this->remove_edge(t1, t2);
             this->remove_node(t1);
             this->remove_node(t2);
-            
-            //std::cout << "match: " << this->match_in_out() << std::endl;
-            //std::cout << "gone:\nt1 = " << gone(t1) << "\nt2 = " << gone(t2) << std::endl;
-            //this->print_structure();
         }
 
         // override base function to update incoming map
@@ -246,6 +312,7 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             Graph<T>::add_edge_directed(t1, t2);
         }
 
+        // add a new directed edge to the graph and save in to_update
         void add_edge_directed_update(T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
         {
             add_edge_directed(t1, t2);
@@ -259,130 +326,24 @@ template<typename T> class KNN_Graph: public Auto_Edge_Graph<T>
             Graph<T>::remove_edge_directed(t1, t2);
         }
 
+        // get neighbours of an object t and store them in vec
         void get_neighbours(std::vector<T> &vec, T &t)
         {
             this->get_children(vec, t);
         }
 
+        // clear the entire graph
         void clear()
         {
             incoming.clear();
             Auto_Edge_Graph<T>::clear();
         }
 
+        // clear all edges of the graph
         void clear_edges()
         {
             incoming.clear();
             Auto_Edge_Graph<T>::clear_edges();
-        }
-
-        bool match_in_out()
-        {
-            std::unordered_map<T, std::unordered_set<T>> check;
-            std::vector<T> children;
-
-            for(T &t : this->get_all_elements())
-            {
-                children.clear();
-                this->get_children(children, t);
-                for(T &tc : children)
-                {
-                    check[tc].insert(t);
-                }
-            }
-
-            for(T &t : this->get_all_elements())
-            {
-                std::unordered_set<T> &children_check = check[t], &children_inc = incoming[t];
-                if(children_check.size() != children_inc.size())
-                {
-                    std::cerr << "size doesn't match (check, inc) = (" + std::to_string(children_check.size()) + ", " + std::to_string(children_inc.size()) + "): ";
-                    std::cerr << t->to_string() << "\nchildren_check: ";
-                    for(T tc : children_check) std::cerr << tc->to_string() << ", ";
-                    std::cerr << "\nchildren_inc: ";
-                    for(T tc : children_inc) std::cerr << tc->to_string() << ", ";
-                    std::cerr << std::endl;
-                    throw std::invalid_argument("");
-                    return false;
-                }
-
-                Maptor<T> diff;
-                for(T t : children_check) diff.push_back(t);
-                for(T t : children_inc) diff.erase(t);
-                
-                if(diff.size() != 0)
-                {
-                    std::cerr << "elements don't match: ";
-                    std::cerr << t->to_string() << "\nchildren_check: ";
-                    for(T t : children_check) std::cerr << t->to_string() << ", ";
-                    std::cerr << "\nchildren_inc";
-                    for(T t : children_inc) std::cerr << t->to_string() << ", ";
-                    std::cerr << std::endl;
-                    throw std::invalid_argument("");
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        bool gone(T &t)
-        {
-            // check outgoing edges
-            std::vector<T> children;
-
-            for(T &tn : this->get_all_elements())
-            {
-                if(tn == t)
-                {
-                    throw std::invalid_argument(t->to_string() + " still exists in outgoing as key");
-                    return false;
-                }
-                
-                this->get_children(children, tn);
-                for(T &tnn : children)
-                {
-                    if(tnn == t)
-                    {
-                        throw std::invalid_argument(t->to_string() + " still exists in outgoing as child");
-                        return false;
-                    }
-                }
-            }
-
-            // check incoming edges
-            for(auto &e : incoming)
-            {
-                T tn = e.first;
-                if(tn == t)
-                {
-                    throw std::invalid_argument(t->to_string() + " still exists in incoming as key");
-                    return false;
-                }
-
-                for(T tnn : e.second)
-                {
-                    if(tnn == t)
-                    {
-                        throw std::invalid_argument(t->to_string() + " still exists in incoming as child");
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        void print_collection(auto begin, auto end)
-        {
-            std::cout << "collection: ";
-            auto it = begin;
-            while(it != end)
-            {
-                std::cout << (*it)->to_string() << ", ";
-                it++;
-            }
-            std::cout << std::endl;
         }
 };
 

@@ -6,6 +6,10 @@
 #ifndef __cluster_container_include__
 #define __cluster_container_include__
 
+/**
+ * @brief abstract class for cluster containers
+ * 
+ */
 class Cluster_Container
 {
     private:

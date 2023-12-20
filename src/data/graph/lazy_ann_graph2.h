@@ -15,6 +15,13 @@ extern int num_threads;
 #ifndef __lazy_ann_graph2_include__
 #define __lazy_ann_graph2_include__
 
+
+/**
+ * @brief Lazy approximated KNN-Graph implementation without using the hnswlib. Single threaded
+ * version works but parallel implementation runs into deadlocks. This class should not be used.
+ * 
+ * @tparam T 
+ */
 template<typename T> class Lazy_ANN_Graph2: public KNN_Graph<T>
 {
     private:

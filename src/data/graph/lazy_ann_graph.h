@@ -8,7 +8,11 @@
 #ifndef __lazy_ann_graph_include__
 #define __lazy_ann_graph_include__
 
-
+/**
+ * @brief Wrapper class to adapt the evaluation function to the hnswlib
+ * 
+ * @tparam T 
+ */
 template<typename T> class Space_Wrapper: public hnswlib::SpaceInterface<float>
 {
     private:
@@ -46,23 +50,41 @@ template<typename T> class Space_Wrapper: public hnswlib::SpaceInterface<float>
 
 extern int num_threads;
 
+/**
+ * @brief Lazy approximated implementation of a KNN-Graph. The condition that every node has exactly
+ * k neighbours is not always fulfilled. Nodes can have less edges now because it's being updated
+ * less frequently. It's a tradeoff between exact representation and time complexity.
+ * 
+ * @tparam T 
+ */
 template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
 {
     private:
+        // constants needed for hnswlib graph implementation
         int M;
         int ef_construction;
         Space_Wrapper<T> space;
+        // navigable small world graph
         hnswlib::HierarchicalNSW<float>* hnsw;
 
         // label_map for constructing hnsw
         std::unordered_map<T, hnswlib::labeltype> label_map;
 
+        /**
+         * @brief search for k nearest neighbours for each node and add its edges.
+         * can run in parallel or single
+         * 
+         */
         void knn_search()
         {
             if(this->get_parallel()) knn_search_parallel();
             else knn_search_single();
         }
 
+        /**
+         * @brief parallel implementation of knn_search
+         * 
+         */
         void knn_search_parallel()
         {
             int size = this->size();
@@ -83,6 +105,13 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
             }
         }
 
+        /**
+         * @brief function called for each thread for knn-search in parallel
+         * 
+         * @param mtx 
+         * @param start 
+         * @param end 
+         */
         void knn_search_parallel_thread(std::mutex *mtx, int start, int end)
         {
             Maptor<T> &elements = this->get_all_elements();
@@ -93,6 +122,11 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
             }
         }
 
+        /**
+         * @brief single threaded implementation for searching for each node's k-
+         * nearest neighbours
+         * 
+         */
         void knn_search_single()
         {
             for(T &t : this->get_all_elements()) knn_search_operation(t);
@@ -109,7 +143,7 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
             while(!knn.empty() && count < k)
             {
                 T &tk = elem[knn.top().second];
-                knn.pop();
+                knn.pop();  // pop the first element because it's always itself
                 if(t == tk) continue;
                 count++;
                 std::lock_guard<std::mutex> lock(*mtx);
@@ -117,12 +151,17 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
             }
         }
     protected:
+        // add a new node to the graph
         void add_edges_operation(T &t, std::mutex *mtx)
         {
-            // addPoint
             hnsw->addPoint((void*) &t, label_map[t]);
         }
 
+        /**
+         * @brief build the entire graph by searching for each node's k nearest
+         * neighbours and adding new edges
+         * 
+         */
         void build_graph()
         {
             // build new hnsw
@@ -139,16 +178,42 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
             std::cout << "hnsw built, number of edges = " << this->size_edges() << std::endl;
         }
 
+        /**
+         * @brief Empty function because the lazy implementation avoids iterating through
+         * all nodes for performance reasons.
+         * 
+         * @param c 
+         * @param t1 
+         * @param t2 
+         * @param to_update 
+         */
         void update_outgoing_edges_all(T &c, T &t1, T &t2, std::vector<std::pair<T, T>> &to_update)
         {
             // leave empty, lazy implementation
         }
 
+        /**
+         * @brief Empty function because the lazy implementation avoids iterating through
+         * all nodes for performance reasons.
+         * 
+         * @param t 
+         * @param exclude 
+         * @param to_update 
+         */
         void replace_incoming_edges_all(T &t, std::unordered_set<T> exclude, std::vector<std::pair<T, T>> &to_update)
         {
             // leave empty, lazy implementation
         }
     public:
+        /**
+         * @brief Construct a new Lazy_ANN_Graph object
+         * 
+         * @param k number of children for each node, not guaranteed at all times because it's a lazy implementation.
+         * The actual number of children can be less.
+         * @param M parameter needed for the hnswlib implementation
+         * @param ef_construction parameter needed for the hnswlib implementation
+         * @param cmp comparison function
+         */
         Lazy_ANN_Graph(int k, int M, int ef_construction, std::function<float(T&, T&)> cmp):
         KNN_Graph<T>(k, cmp),
         M(M),
@@ -158,6 +223,11 @@ template<typename T> class Lazy_ANN_Graph: public KNN_Graph<T>
 
         }
 
+        /**
+         * @brief rebuild the entire graph by finding each node's k nearest neighbours.
+         * 
+         * @param to_update 
+         */
         void rebuild(std::vector<std::pair<T, T>> &to_update)
         {
             // clear current state

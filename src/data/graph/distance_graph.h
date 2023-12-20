@@ -9,14 +9,30 @@
 #ifndef __distance_graph_include__
 #define __distance_graph_include__
 
+
+/**
+ * @brief Graph class which adds edges if the distance between two elements
+ * is less than a threshold. 
+ * 
+ * @tparam T 
+ */
 template<typename T> class Distance_Graph: public Auto_Edge_Graph<T>
 {
     private:
+        // comparison function
         float (*cmp)(T&, T&);
+        // distance threshold
         float dist;
+        // set of visited nodes needed for parallelization to not process duplicates
         std::unordered_set<T> visited;
         
     protected:
+        /**
+         * @brief iterate through all nodes and add edges
+         * 
+         * @param t 
+         * @param mtx 
+         */
         void add_edges_operation(T &t, std::mutex *mtx)
         {
             for(T &tn : this->get_all_elements())
@@ -52,6 +68,13 @@ template<typename T> class Distance_Graph: public Auto_Edge_Graph<T>
             }
         }
     public:
+        /**
+         * @brief Construct a new Distance_Graph object. distance indicates the distance
+         * threshold and comparator is needed to calculate the distance between two elements.
+         * 
+         * @param distance 
+         * @param comparator 
+         */
         Distance_Graph(float distance, float(*comparator)(T&, T&)): dist(distance), cmp(comparator) {}
 
         /*
