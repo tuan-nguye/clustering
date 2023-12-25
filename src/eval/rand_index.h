@@ -8,14 +8,21 @@
 #ifndef __rand_index_include__
 #define __rand_index_include__
 
-/*
-iterate through all pairs of elements and count the number
-of pairs that are in the same subset in both labelings
-and pairs that are in different subsets in both labelings
-*/
+/**
+ * @brief Rand index implementation. iterate through all pairs of elements and count the number
+ * of pairs that are in the same subset in both labelings
+ * and pairs that are in different subsets in both labelings
+ * The range goes from [0, 1] where 1 is the best possible value.
+ */
 class Rand_Index: public Evaluation
 {
     private:
+        /**
+         * @brief my own rand index implementation.
+         * 
+         * @param prediction_map 
+         * @return double 
+         */
         double deprecated_implementation(std::unordered_map<Data*, std::string> prediction_map)
         {
             std::vector<std::pair<Data*, std::string>> entries = get_entry_vector(prediction_map);
@@ -39,6 +46,12 @@ class Rand_Index: public Evaluation
         double recall_joins = 0.0;
         double recall_cuts = 0.0;
     public:
+        /**
+         * @brief Rand index implementation from the andres library
+         * 
+         * @param prediction_map 
+         * @return double 
+         */
         double execute(std::unordered_map<Data*, std::string> prediction_map)
         {
             // build map to assign each truth/prediction label unique size_t value
@@ -83,7 +96,9 @@ class Rand_Index: public Evaluation
             return rand_index.index();
         }
 
+        // get the recall score of the joins (elements in the same cluster)
         double get_recall_joins() { return recall_joins; }
+        // get the recall score of the cuts (elements in different clusters)
         double get_recall_cuts() { return recall_cuts; }
 };
 

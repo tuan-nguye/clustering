@@ -8,9 +8,20 @@
 #ifndef __variation_of_information_include__
 #define __variation_of_information_include__
 
+/**
+ * @brief Implementation of the variation of information metric. It has a range of [0, log(N))
+ * where 0 is the best score
+ * 
+ */
 class Variation_Of_Information: public Evaluation
 {
     public:
+        /**
+         * @brief calculate the variation of information from a clustering result
+         * 
+         * @param prediction_map 
+         * @return double variation of information score
+         */
         double execute(std::unordered_map<Data*, std::string> prediction_map)
         {
             // build map to assign each truth/prediction label unique size_t value

@@ -4,6 +4,10 @@
 #ifndef __silhouette_score_include__
 #define __silhouette_score_include__
 
+/**
+ * @brief Implementation of the silhouette score for clustering evaluation
+ * 
+ */
 class Silhouette_Score: public Evaluation
 {
     public:

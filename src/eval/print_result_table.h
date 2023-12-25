@@ -12,17 +12,36 @@
 #ifndef __print_result_table__
 #define __print_result_table__
 
+/**
+ * @brief This class is used to print the result from a clustering algorithm
+ * into a table. The rows are the predicted labels and the columns the actual labels.
+ * The table shows the distribution of the element according to the labels.
+ * 
+ */
 class Print_Result_Table
 {
     private:
-        //static std::string root = std::string("build/out");
-
+        /**
+         * @brief add left padding to a string
+         * 
+         * @param str input string
+         * @param length output string length
+         * @param c char to pad the string with
+         */
         static void pad_left(std::string &str, int length, char c)
         {
             int pad_size = length-str.length();
             if(pad_size <= 0) return;
             str.insert(0, pad_size, c);
         }
+
+        /**
+         * @brief add left and right padding, so that the string is in the middle
+         * 
+         * @param str input string
+         * @param length output string length
+         * @param c char to pad the string with
+         */
         static void pad_centered(std::string &str, int length, char c)
         {
             int diff = length-str.length();
@@ -32,6 +51,12 @@ class Print_Result_Table
             str.append(right_pad, c);
         }
     public:
+    /**
+     * @brief print the table
+     * 
+     * @param result_map clustering result map
+     * @return std::string 
+     */
         static std::string print(std::unordered_map<Data*, std::string> result_map)
         {
             std::unordered_map<std::string, std::unordered_map<std::string, int>> count_map;
@@ -120,6 +145,12 @@ class Print_Result_Table
             return out;
         }
 
+        /**
+         * @brief write a string to a file and save
+         * 
+         * @param input input string, file input
+         * @param file_name file directory and name joined as path
+         */
         static void write_to_file(std::string &input, std::string file_name)
         {
             std::ofstream file(file_name);

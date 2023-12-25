@@ -6,6 +6,10 @@
 #ifndef __evaluation_include__
 #define __evaluation_include__
 
+/**
+ * @brief Abstract class Evaluation
+ * 
+ */
 class Evaluation
 {
     protected:
@@ -16,6 +20,12 @@ class Evaluation
             return entries;
         }
     public:
+        /**
+         * @brief evaluation function to evaluate clusterings
+         * 
+         * @param prediction_map maps Data elements, which have a true label, to the predicted labels as string
+         * @return double 
+         */
         virtual double execute(std::unordered_map<Data*, std::string> prediction_map) = 0;
 };
 

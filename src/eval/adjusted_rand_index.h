@@ -5,6 +5,11 @@
 #ifndef __adjusted_rand_index_include__
 #define __adjusted_rand_index_include__
 
+/**
+ * @brief Implementation of the Adjusted Rand index for clustering evaluation, range: [-1, 1], where 1 is the best value.
+ * from: https://en.wikipedia.org/wiki/Rand_index#:~:text=The%20adjusted%20Rand%20index%20is,specified%20by%20a%20random%20model.
+ * 
+ */
 class Adjusted_Rand_Index: public Evaluation
 {
     public:
